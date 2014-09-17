@@ -1,0 +1,57 @@
+# This file contains metadata for your plugin. Beginning
+# with version 1.8 this is the preferred way to supply information about a
+# plugin. The current method of embedding metadata in __init__.py will
+# be supported until version 2.0
+
+# This file should be included when you package your plugin.
+
+# Mandatory items:
+
+
+[general]
+name=NNJoin
+qgisMinimumVersion=2.0
+description=Nearest neighbour join.  Join vector layers based on nearest neighbour relationships.
+version=1.0.3
+author=Håvard Tveite
+email=havard.tveite@nmbu.no
+
+# end of mandatory metadata
+
+# Optional items:
+
+# Uncomment the following line and add your changelog entries:
+changelog=0.0.1
+    - Modified from points2one
+    0.1.0
+    - Added functionality for joining vector layers based on neighbour relationships.
+    0.2.0
+    - Added support for all vector layer types
+    0.2.1
+    - Fixed som translation issues
+    1.0.0
+    - Threading
+    - Spatial index for input point layers
+    - Use of the QGIS messagebar
+    1.0.1
+    - Fixed the progressbar in the QGIS messagebar
+    1.0.2
+    - Code formatting
+    - Removed plugin from the vector plugin toolbar
+    - Added datasets for testing the plugin
+    1.0.3
+    - Fixed the tags
+    
+# tags are comma separated with spaces allowed
+tags=join,distance,nearest,neighbour,neighbor,spatial join
+
+homepage=http://hub.qgis.org/projects/nnjoin
+#http://arken.umb.no/~havatv/gis/qgisplugins/NNJoin
+tracker=https://hub.qgis.org/projects/nnjoin/issues
+repository=https://github.com/havatv/qgisnnjoinplugin.git
+icon=nnjoin.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version
+deprecated=False

@@ -1,0 +1,5 @@
+Datasets that can be used to test the plugin:
+
+point32 - Shapefile point dataset, UTM Zone 32, WGS 1984
+line32 - Shapefile line dataset, UTM Zone 32, WGS 1984
+line33 - Shapefile line dataset, UTM Zone 33, WGS 1984

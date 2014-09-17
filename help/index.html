@@ -1,0 +1,51 @@
+<html>
+<head>
+<title>QGIS NNPlugin</title>
+</head>
+<body>
+<h1>QGIS NNPlugin</h1>
+
+<p>The QGIS NNPlugin can be used to join two vector layers (the
+<i>input</i> and the <i>join</i> layer).</p>
+
+<p>A feature from the <i>input</i> layer is joined to the nearest
+feature in the <i>join</i> layer.</p>
+
+<p>The result of the join is a new vector layer with the same
+geometry type and coordinate reference system as the <i>input</i>
+layer.</p>
+
+<p>The result layer will contain all the attributes of both
+the <i>input</i> and <i>join</i> layers plus a new attribute
+"distance" that contains the distance between the joined features.
+The attributes from the <i>join</i> layer will get a prefix
+("join_").</p>
+
+<p>The implementation is naive, in that it loops through all
+the features of the <i>input</i> dataset, and for each feature finds
+the nearest neighbour in the <i>join</i> dataset.
+For point input layers, a spatial index is used to speed up the
+search for neighbours.
+For line and polygon layers, the geometry of each feature in the
+input layer is compared to the geometries of all the features of the
+join layer!</p>
+
+<p>Below is a table that cross tabulates <i>input layer</i> (rows)
+and <i>join</i> layer (column) geometry types, and indicates the
+usefulness of the plugin (<strong>OK</strong> or
+<strong>slow</strong>).</p>
+
+<table border=1>
+<tr><td>Layer (row: input; column: join)</td><th>Point</th><th>Line</th><th>Polygon</th></tr>
+
+<tr><th>Point</th><td style="background-color:#00C000">OK</td><td style="background-color:#00C000">OK</td><td style="background-color:#00C000">OK</td></tr>
+
+<tr><th>Line</th><td style="background-color:#F08000">Slow!</td><td style="background-color:#F08000">Slow!</td><td style="background-color:#F08000">Slow!</td></tr>
+
+<tr><th>Polygon</th><td style="background-color:#F08000">Slow!</td><td style="background-color:#F08000">Slow!</td><td style="background-color:#F08000">Slow!</td></tr>
+
+</table>
+
+
+</body>
+</html>
