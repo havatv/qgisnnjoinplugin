@@ -7,24 +7,30 @@
     <x>0</x>
     <y>0</y>
     <width>462</width>
-    <height>265</height>
+    <height>296</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>NNJoin</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <property name="modal">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>441</width>
-     <height>251</height>
+     <width>446</width>
+     <height>275</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_6">
     <item>
-     <widget class="QGroupBox" name="groupBox_2">
+     <widget class="QGroupBox" name="groupBox_1">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -34,103 +40,69 @@
       <property name="title">
        <string>Input vector layer</string>
       </property>
-      <widget class="QWidget" name="horizontalLayoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>421</width>
-         <height>32</height>
-        </rect>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QComboBox" name="inputVectorLayer">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>The base layer for the join.&lt;br&gt;Each feature of this layer will be joined to the nearest neighbour from the join layer.</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QComboBox" name="inputVectorLayer">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>The base layer for the join.&lt;br&gt;Each feature of this layer will be joined to the nearest neighbour from the join layer.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="approximate_input_geom_cb">
+         <property name="toolTip">
+          <string>Use approximate input geometries.&lt;br&gt;This will enable the use of a spatial index - could speed up the join considerably.</string>
+         </property>
+         <property name="text">
+          <string>Approximate geometries using centroids</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+      <zorder>approximate_input_geom_cb</zorder>
+      <zorder>inputVectorLayer</zorder>
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="gropuBox_4">
+     <widget class="QGroupBox" name="groupBox_2">
       <property name="title">
        <string>Join vector layer</string>
       </property>
-      <widget class="QWidget" name="horizontalLayoutWidget_4">
-       <property name="geometry">
-        <rect>
-         <x>9</x>
-         <y>20</y>
-         <width>421</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <widget class="QComboBox" name="joinVectorLayer">
-          <property name="toolTip">
-           <string>The join layer.&lt;br&gt;A feature from this layer is joined to all the features from the the input layer that has this features as it's nearest neighbour.</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QComboBox" name="joinVectorLayer">
+         <property name="toolTip">
+          <string>The join layer.&lt;br&gt;A feature from this layer is joined to all the features from the the input layer that has this features as it's nearest neighbour.</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="groupBox_3">
       <property name="title">
        <string>Output layer</string>
       </property>
-      <widget class="QWidget" name="horizontalLayoutWidget_3">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>421</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLineEdit" name="outputDataset">
-          <property name="toolTip">
-           <string>The result layer that contains the join.&lt;br&gt;For each feature of the input layer, the output layer contains that feature with all it's attributes and all the attributes of the nearest feature in the join layer added.</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QLineEdit" name="outputDataset">
+         <property name="toolTip">
+          <string>The result layer that contains the join.&lt;br&gt;For each feature of the input layer, the output layer contains that feature with all it's attributes and all the attributes of the nearest feature in the join layer added.</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>10</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <layout class="QHBoxLayout" name="horizontalLayout_1">
       <property name="spacing">
        <number>5</number>
       </property>

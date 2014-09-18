@@ -61,6 +61,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         cancelButton.setText(self.CANCEL)
         closeButton = self.button_box.button(QDialogButtonBox.Close)
         closeButton.setText(self.CLOSE)
+        self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
+        
         # Connect signals
 
         okButton.clicked.connect(self.startWorker)
@@ -95,8 +97,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
           self.showError(self.tr('No join layer defined'))
           return
         outputlayername = self.outputDataset.text()
+        approximateinputgeom = self.approximate_input_geom_cb.isChecked()
         # create a new worker instance
-        worker = Worker(inputlayer, joinlayer, outputlayername)
+        worker = Worker(inputlayer, joinlayer, outputlayername, approximateinputgeom)
         # configure the QgsMessageBar
         msgBar = self.iface.messageBar().createMessage(self.tr('Joining'),'')
         self.aprogressBar = QProgressBar()
@@ -128,9 +131,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.button_box.button(QDialogButtonBox.Close).setEnabled(False)
         
         if layerId == joinlayerId:
-            QgsMessageLog.logMessage(self.tr("The input layers are"
-                                             "equal - self join"),
-                                     self.NNJOIN,QgsMessageLog.INFO)
             self.showWarning("The join layer is the same as the"
                              " input layer - doing a self join!")
         
@@ -181,7 +181,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         """Do the necessary updates after a layer selection has been changed."""
         self.outputDataset.setText(self.inputVectorLayer.currentText() +
                                    '_' +self.joinVectorLayer.currentText())
-
         layerindex = self.inputVectorLayer.currentIndex()
         layerId = self.inputVectorLayer.itemData(layerindex)
         inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
@@ -193,6 +192,24 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 joinlayer.dataProvider().crs()):
            self.showWarning('Layers have different CRS - results may'
                              'not be correct')
+        # Check if the input layer is not a point layer
+        if inputlayer != None:
+            geometryType = inputlayer.geometryType()
+            feats = inputlayer.getFeatures()
+            if geometryType == QGis.Point:
+                if not feats.next().geometry().isMultipart():
+                    self.approximate_input_geom_cb.setVisible(False)
+            else:
+                self.approximate_input_geom_cb.setVisible(True)
+                self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
+            #elif geometryType == QGis.Line:
+            #    geometrytypetext = 'LineString'
+            #elif geometryType == QGis.Polygon:
+            #    geometrytypetext = 'Polygon'
+        else:
+            self.approximate_input_geom_cb.setVisible(False)
+            
+            
 
     def killWorker(self):
         """Kill the worker thread."""

@@ -22,13 +22,16 @@ class Worker(QtCore.QObject):
     #killed = QtCore.pyqtSignal()
     finished = QtCore.pyqtSignal(bool, object) # For sending over the result
 
-    def __init__(self, inputvectorlayer, joinvectorlayer, outputlayername):
+    def __init__(self, inputvectorlayer, joinvectorlayer, outputlayername, approximateinputgeom):
         """Initialise.
 
         Arguments:
         inputvectorlayer -- the base vector layer for the join
         joinvectorlayer -- the join layer
         outputlayername -- the name of the output memory layer
+        approximateinputgeom -- boolean: should the input geometry
+                                be approximated?  Is only be set for
+                                non-single-point layers
         """
         
         QtCore.QObject.__init__(self)  # Essential!
@@ -36,6 +39,7 @@ class Worker(QtCore.QObject):
         self.inputvectorlayer = inputvectorlayer
         self.joinvectorlayer = joinvectorlayer
         self.outputlayername = outputlayername
+        self.approximateinputgeom = approximateinputgeom
         # Creating instance variables for the progress bar ++
         # Number of elements that have been processed - updated by
         # calculate_progress
@@ -55,13 +59,6 @@ class Worker(QtCore.QObject):
     def run(self):
         try:
             self.status.emit('Started!')
-            # Create a spatial index to speed up joining of point
-            # layer inputs
-            self.joinlayerindex = QgsSpatialIndex()
-            for feat in self.joinvectorlayer.getFeatures(): 
-                if self.abort is True:
-                    break
-                self.joinlayerindex.insertFeature(feat)
             # Check the geometry type
             geometryType = self.inputvectorlayer.geometryType()
             geometrytypetext = 'Point'
@@ -97,6 +94,18 @@ class Worker(QtCore.QObject):
             self.mem_joinlayer.startEditing()
             for field in outfields:
                 self.mem_joinlayer.dataProvider().addAttributes([field])
+            # For point input layers and approximate input geometries
+            # (centroids), an index can be used:
+            if geometrytypetext == 'Point' or self.approximateinputgeom:
+                # Create a spatial index to speed up joining of point
+                # layer inputs
+                self.status.emit('Creating index...')
+                self.joinlayerindex = QgsSpatialIndex()
+                for feat in self.joinvectorlayer.getFeatures(): 
+                    if self.abort is True:
+                        break
+                    self.joinlayerindex.insertFeature(feat)
+                self.status.emit('Finised creating index!')
             features = self.inputvectorlayer.getFeatures()
             for feat in features:
                 if self.abort is True:
@@ -136,6 +145,9 @@ class Worker(QtCore.QObject):
         '''
         infeature = feat
         inputgeom = QgsGeometry(infeature.geometry())
+        # Working with approximate geometries?
+        if self.approximateinputgeom:
+            inputgeom = QgsGeometry(infeature.geometry()).centroid()
         # Check if the coordinate systems are equal
         if (self.inputvectorlayer.dataProvider().crs() !=
                         self.joinvectorlayer.dataProvider().crs()):
@@ -145,8 +157,8 @@ class Worker(QtCore.QObject):
         nnfeature = None
         mindistance = float("inf")
         ## Find the closest feature!
-        if (self.inputvectorlayer.geometryType() == QGis.Point and
-                            not infeature.geometry().isMultipart()):
+        if (self.approximateinputgeom or (self.inputvectorlayer.geometryType() == QGis.Point and
+                            not infeature.geometry().isMultipart())):
             # Check if it is a self join!
             if self.inputvectorlayer == self.joinvectorlayer:
                 nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(),2)[1]
@@ -173,21 +185,22 @@ class Worker(QtCore.QObject):
                 if thisdistance < mindistance:
                     mindistance = thisdistance
                     nnfeature = inFeatJoin
-        atMapA = infeature.attributes()
-        atMapB = nnfeature.attributes()
-        attrs = []
-        attrs.extend(atMapA)
-        attrs.extend(atMapB)
-        attrs.append(mindistance)
+        if not self.abort:
+            atMapA = infeature.attributes()
+            atMapB = nnfeature.attributes()
+            attrs = []
+            attrs.extend(atMapA)
+            attrs.extend(atMapB)
+            attrs.append(mindistance)
 
-        outFeat = QgsFeature()
-        # Use the original geometry!:
-        outFeat.setGeometry(QgsGeometry(infeature.geometry()))
-        outFeat.setAttributes(attrs)
-        #self.status.emit('iter_features calculating progress')
-        self.calculate_progress()
-        #self.status.emit('iter_features progress calculated')
-        self.mem_joinlayer.dataProvider().addFeatures([outFeat])
+            outFeat = QgsFeature()
+            # Use the original geometry!:
+            outFeat.setGeometry(QgsGeometry(infeature.geometry()))
+            outFeat.setAttributes(attrs)
+            #self.status.emit('iter_features calculating progress')
+            self.calculate_progress()
+            #self.status.emit('iter_features progress calculated')
+            self.mem_joinlayer.dataProvider().addFeatures([outFeat])
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
