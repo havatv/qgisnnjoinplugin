@@ -24,7 +24,7 @@
 
 
 #Add iso code for any locales you want to support here (space separated)
-LOCALES = no nb
+LOCALES = nn nb
 
 # translation
 SOURCES = \
