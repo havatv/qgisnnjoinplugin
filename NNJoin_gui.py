@@ -62,6 +62,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         closeButton = self.button_box.button(QDialogButtonBox.Close)
         closeButton.setText(self.CLOSE)
         self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
+        self.approximate_input_geom_cb.setVisible(False)
         
         # Connect signals
 
