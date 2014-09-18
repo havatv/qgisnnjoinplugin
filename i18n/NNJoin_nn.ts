@@ -16,27 +16,22 @@
 <context>
     <name>NNJoinDialog</name>
     <message>
-        <location filename="NNJoin_gui.py" line="74"/>
+        <location filename="NNJoin_gui.py" line="83"/>
         <source>NNJoin</source>
         <translation type="unfinished">NN-kopling</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="80"/>
+        <location filename="NNJoin_gui.py" line="91"/>
         <source>No input layer defined</source>
         <translation type="unfinished">Innlaget mangler</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="85"/>
+        <location filename="NNJoin_gui.py" line="97"/>
         <source>No join layer defined</source>
         <translation type="unfinished">Koplingslaget mangler</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="119"/>
-        <source>The input layers are equal - self join</source>
-        <translation type="unfinished">Dei to laga er like - sjølvkopling</translation>
-    </message>
-    <message>
-        <location filename="NNJoin_gui.py" line="91"/>
+        <location filename="NNJoin_gui.py" line="104"/>
         <source>Joining</source>
         <translation type="unfinished">Kopler</translation>
     </message>
@@ -46,27 +41,27 @@
         <translation type="unfinished">Avbryt</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="137"/>
+        <location filename="NNJoin_gui.py" line="153"/>
         <source>NNJoin finished</source>
         <translation type="unfinished">NN-kopling avslutta</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="174"/>
+        <location filename="NNJoin_gui.py" line="217"/>
         <source>Killing worker</source>
         <translation type="unfinished">Dreper arbeidsprosessen</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="178"/>
+        <location filename="NNJoin_gui.py" line="223"/>
         <source>Error</source>
         <translation type="unfinished">Feil</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="182"/>
+        <location filename="NNJoin_gui.py" line="231"/>
         <source>Warning</source>
         <translation type="unfinished">Advarsel</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="186"/>
+        <location filename="NNJoin_gui.py" line="239"/>
         <source>Info</source>
         <translation type="unfinished">Informasjon</translation>
     </message>
@@ -81,22 +76,22 @@
         <translation type="unfinished">Avslutt</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="154"/>
+        <location filename="NNJoin_gui.py" line="171"/>
         <source>Worker failed - exception</source>
         <translation type="unfinished">Arbeidsprosessen feila - avbrott</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="157"/>
+        <location filename="NNJoin_gui.py" line="177"/>
         <source>Worker</source>
         <translation type="unfinished">Arbeidsprosess</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="144"/>
+        <location filename="NNJoin_gui.py" line="161"/>
         <source>Aborted</source>
         <translation type="unfinished">Avbrote</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="146"/>
+        <location filename="NNJoin_gui.py" line="163"/>
         <source>No layer created</source>
         <translation type="unfinished">Ikkje noko lag</translation>
     </message>
@@ -109,44 +104,54 @@
         <translation type="unfinished">NN-kopling</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="35"/>
+        <location filename="ui_frmNNJoin.ui" line="41"/>
         <source>Input vector layer</source>
         <translation type="unfinished">Innlag</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="67"/>
+        <location filename="ui_frmNNJoin.ui" line="75"/>
         <source>Join vector layer</source>
         <translation type="unfinished">Koplingslag</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="93"/>
+        <location filename="ui_frmNNJoin.ui" line="91"/>
         <source>Output layer</source>
         <translation type="unfinished">Resultatlag</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="146"/>
+        <location filename="ui_frmNNJoin.ui" line="118"/>
         <source>Indicates the progress of the join operation</source>
         <translation type="unfinished">Indikerer framdrifta i arbeidet</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="162"/>
+        <location filename="ui_frmNNJoin.ui" line="134"/>
         <source>OK to run the join&lt;br&gt;Close to quit&lt;br&gt;Cancel to abort the join</source>
         <translation type="unfinished">Køyr: Utfør koplinga&lt;br&gt;Avslutt: Avslutt programmet&lt;br&gt;Avbryt: Avbryt programmet</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="56"/>
+        <location filename="ui_frmNNJoin.ui" line="53"/>
         <source>The base layer for the join.&lt;br&gt;Each feature of this layer will be joined to the nearest neighbour from the join layer.</source>
         <translation type="unfinished">Basislaget for koplinga.&lt;br&gt;Kvart objekt i dette laget vil bli kopla til det næraste objektet i koplingslaget</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="82"/>
+        <location filename="ui_frmNNJoin.ui" line="81"/>
         <source>The join layer.&lt;br&gt;A feature from this layer is joined to all the features from the the input layer that has this features as it&apos;s nearest neighbour.</source>
         <translation type="unfinished">Koplingslaget.&lt;br&gt;Eit objekt fra dette laget koplast til alle dei objekta i innlaget som det er næraste nabo til</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="108"/>
+        <location filename="ui_frmNNJoin.ui" line="97"/>
         <source>The result layer that contains the join.&lt;br&gt;For each feature of the input layer, the output layer contains that feature with all it&apos;s attributes and all the attributes of the nearest feature in the join layer added.</source>
         <translation type="unfinished">Resultatlaget som inneholder koplinga.&lt;br&gt;For kvart objekt i innlaget vil utlaget inneholde objektet med sine attributt pluss attributtane til det nærastliggande objektet i koplingslaget</translation>
+    </message>
+    <message>
+        <location filename="ui_frmNNJoin.ui" line="60"/>
+        <source>Use approximate input geometries.&lt;br&gt;This will enable the use of a spatial index - could speed up the join considerably.</source>
+        <translation type="unfinished">Bruk forenkla geometriar for basislaget.&lt;br&gt;Dette mogeleggjer bruk av ein romlig indeks, noko som vanlegvis får koplinga til å gå fortare.</translation>
+    </message>
+    <message>
+        <location filename="ui_frmNNJoin.ui" line="63"/>
+        <source>Approximate geometries using centroids</source>
+        <translation type="unfinished">Tilnærma geometriar (sentroider)</translation>
     </message>
 </context>
 </TS>
