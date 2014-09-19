@@ -43,12 +43,13 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+*.qm
 
 # Django stuff:
 *.log
 
 # Sphinx documentation
-docs/_build/
+help/build/
 
 # PyBuilder
 target/
