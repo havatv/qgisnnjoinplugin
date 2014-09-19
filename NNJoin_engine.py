@@ -22,7 +22,7 @@ class Worker(QtCore.QObject):
     #killed = QtCore.pyqtSignal()
     finished = QtCore.pyqtSignal(bool, object) # For sending over the result
 
-    def __init__(self, inputvectorlayer, joinvectorlayer, outputlayername, approximateinputgeom):
+    def __init__(self, inputvectorlayer, joinvectorlayer, outputlayername, approximateinputgeom, joinprefix):
         """Initialise.
 
         Arguments:
@@ -32,6 +32,8 @@ class Worker(QtCore.QObject):
         approximateinputgeom -- boolean: should the input geometry
                                 be approximated?  Is only be set for
                                 non-single-point layers
+        joinprefix -- the prefix to use for the join layer attributes
+                      in the output layer
         """
         
         QtCore.QObject.__init__(self)  # Essential!
@@ -40,6 +42,7 @@ class Worker(QtCore.QObject):
         self.joinvectorlayer = joinvectorlayer
         self.outputlayername = outputlayername
         self.approximateinputgeom = approximateinputgeom
+        self.joinprefix = joinprefix
         # Creating instance variables for the progress bar ++
         # Number of elements that have been processed - updated by
         # calculate_progress
@@ -75,20 +78,21 @@ class Worker(QtCore.QObject):
                 geometrytypetext = 'Multi'+geometrytypetext
             feats.rewind()
             feats.close()
+            geomparametertext = geometrytypetext
             # Set the coordinate reference system to the input layer's CRS
             if self.inputvectorlayer.dataProvider().crs() != None:
-                geometrytypetext = (geometrytypetext + "?crs=" +
+                geomparametertext = (geomparametertext + "?crs=" +
                     str(self.inputvectorlayer.dataProvider().crs().authid()))
                 pass
             # Create a memory layer
             outfields = self.inputvectorlayer.pendingFields().toList()
             jfields = self.joinvectorlayer.pendingFields().toList()
             for joinfield in jfields:
-                outfields.append(QgsField("join_" +
+                outfields.append(QgsField(self.joinprefix +
                                  str(joinfield.name()),
                                  joinfield.type()))
             outfields.append(QgsField("distance", QVariant.Double))
-            self.mem_joinlayer = QgsVectorLayer(geometrytypetext,
+            self.mem_joinlayer = QgsVectorLayer(geomparametertext,
                                                 self.outputlayername,
                                                 "memory")
             self.mem_joinlayer.startEditing()

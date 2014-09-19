@@ -99,8 +99,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
           return
         outputlayername = self.outputDataset.text()
         approximateinputgeom = self.approximate_input_geom_cb.isChecked()
+        joinprefix = self.joinPrefix.text()
         # create a new worker instance
-        worker = Worker(inputlayer, joinlayer, outputlayername, approximateinputgeom)
+        worker = Worker(inputlayer, joinlayer, outputlayername, approximateinputgeom, joinprefix)
         # configure the QgsMessageBar
         msgBar = self.iface.messageBar().createMessage(self.tr('Joining'),'')
         self.aprogressBar = QProgressBar()

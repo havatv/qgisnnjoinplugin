@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>462</width>
-    <height>296</height>
+    <height>330</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
      <x>10</x>
      <y>10</y>
      <width>446</width>
-     <height>275</height>
+     <height>313</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -81,6 +81,27 @@
           <string>The join layer.&lt;br&gt;A feature from this layer is joined to all the features from the the input layer that has this features as it's nearest neighbour.</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Join prefix:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="joinPrefix">
+           <property name="toolTip">
+            <string>The prefix used for the join layer attributes in the output layer.&lt;br&gt;Without a prefix, if a join layer attribute has the same name as an input layer attribute, it will not be included in the output layer.</string>
+           </property>
+           <property name="text">
+            <string>join_</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
