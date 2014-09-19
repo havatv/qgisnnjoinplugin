@@ -5,6 +5,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Emacs remains
+*~
+
 # Distribution / packaging
 .Python
 env/
@@ -21,6 +24,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+*.zip
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

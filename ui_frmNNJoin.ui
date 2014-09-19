@@ -94,7 +94,7 @@
          <item>
           <widget class="QLineEdit" name="joinPrefix">
            <property name="toolTip">
-            <string>The prefix used for the join layer attributes in the output layer.&lt;br&gt;Without a prefix, if a join layer attribute has the same name as an input layer attribute, it will not be included in the output layer.</string>
+            <string>The prefix used for the join layer attributes in the result layer.&lt;br&gt;Without a prefix, if a join layer attribute has the same name as an input layer attribute, it will not be included in the result layer.</string>
            </property>
            <property name="text">
             <string>join_</string>
