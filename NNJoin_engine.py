@@ -22,7 +22,7 @@ class Worker(QtCore.QObject):
     #killed = QtCore.pyqtSignal()
     finished = QtCore.pyqtSignal(bool, object) # For sending over the result
 
-    def __init__(self, inputvectorlayer, joinvectorlayer, outputlayername, approximateinputgeom, joinprefix):
+    def __init__(self, inputvectorlayer, joinvectorlayer, outputlayername, approximateinputgeom, joinprefix, useindex):
         """Initialise.
 
         Arguments:
@@ -34,6 +34,8 @@ class Worker(QtCore.QObject):
                                 non-single-point layers
         joinprefix -- the prefix to use for the join layer attributes
                       in the output layer
+        useindex -- boolean: should an index for the join layer be
+                    used.
         """
         
         QtCore.QObject.__init__(self)  # Essential!
@@ -43,6 +45,7 @@ class Worker(QtCore.QObject):
         self.outputlayername = outputlayername
         self.approximateinputgeom = approximateinputgeom
         self.joinprefix = joinprefix
+        self.useindex = useindex
         # Creating instance variables for the progress bar ++
         # Number of elements that have been processed - updated by
         # calculate_progress
@@ -100,7 +103,12 @@ class Worker(QtCore.QObject):
                 self.mem_joinlayer.dataProvider().addAttributes([field])
             # For point input layers and approximate input geometries
             # (centroids), an index can be used:
-            if geometrytypetext == 'Point' or self.approximateinputgeom:
+            if ((geometrytypetext == 'Point' or self.approximateinputgeom) and
+                    (self.useindex or
+                    (self.joinvectorlayer.wkbType() == QGis.WKBPoint or
+                    self.joinvectorlayer.wkbType() == QGis.WKBPoint25D)
+                    #(self.joinvectorlayer.geometryType() == QGis.Point)
+                    )):
                 # Create a spatial index to speed up joining of point
                 # layer inputs
                 self.status.emit('Creating index...')
@@ -161,8 +169,16 @@ class Worker(QtCore.QObject):
         nnfeature = None
         mindistance = float("inf")
         ## Find the closest feature!
-        if (self.approximateinputgeom or (self.inputvectorlayer.geometryType() == QGis.Point and
-                            not infeature.geometry().isMultipart())):
+        # Should an index be used?
+        if  ((self.useindex or
+                (self.joinvectorlayer.wkbType() == QGis.WKBPoint or
+                self.joinvectorlayer.wkbType() == QGis.WKBPoint25D)) and
+                #self.joinvectorlayer.geometryType() == QGis.Point) and
+                (self.approximateinputgeom or
+                (self.inputvectorlayer.wkbType() == QGis.WKBPoint or
+                self.inputvectorlayer.wkbType() == QGis.WKBPoint25D))):
+                #(self.inputvectorlayer.geometryType() == QGis.Point and
+                #not infeature.geometry().isMultipart()))):
             # Check if it is a self join!
             if self.inputvectorlayer == self.joinvectorlayer:
                 nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(),2)[1]

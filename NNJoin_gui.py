@@ -63,17 +63,22 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         closeButton.setText(self.CLOSE)
         self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
         self.approximate_input_geom_cb.setVisible(False)
-        
+        self.use_index_cb.setCheckState(Qt.Unchecked)
+        self.use_index_cb.setVisible(False)
+ 
         # Connect signals
-
         okButton.clicked.connect(self.startWorker)
         cancelButton.clicked.connect(self.killWorker)
         closeButton.clicked.connect(self.reject)
+        #self.use_index_cb.stateChanged['int'].connect(self.useindexchanged)
+        self.approximate_input_geom_cb.stateChanged['int'].connect(self.useindexchanged)
+        
         inpIndexCh = self.inputVectorLayer.currentIndexChanged['QString']
         inpIndexCh.connect(self.layerchanged)
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
         joinIndexCh.connect(self.layerchanged)
-
+        #useIndexCbCh = self.use_index_cb.stateChanged()
+        #useIndexCbCh.connect(self.layerchanged)
         # pyuic4 uses old style connections, so the disconnect has to be old style!
         #self.button_box.rejected.disconnect(self.reject)  # does not work with pyuic4
         QObject.disconnect(self.button_box, SIGNAL( "rejected()" ), self.reject)
@@ -100,8 +105,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         outputlayername = self.outputDataset.text()
         approximateinputgeom = self.approximate_input_geom_cb.isChecked()
         joinprefix = self.joinPrefix.text()
+        useindex = self.use_index_cb.isChecked()
         # create a new worker instance
-        worker = Worker(inputlayer, joinlayer, outputlayername, approximateinputgeom, joinprefix)
+        worker = Worker(inputlayer, joinlayer, outputlayername, approximateinputgeom, joinprefix, useindex)
         # configure the QgsMessageBar
         msgBar = self.iface.messageBar().createMessage(self.tr('Joining'),'')
         self.aprogressBar = QProgressBar()
@@ -179,7 +185,28 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         QgsMessageLog.logMessage(self.tr('Worker')+': ' + message_string,
                                  self.NNJOIN, QgsMessageLog.INFO)
 
-    def layerchanged(self, number):
+    def layerchanged(self, number=0):
+        """Do the necessary updates after a layer selection has been changed."""
+        layerindex = self.inputVectorLayer.currentIndex()
+        layerId = self.inputVectorLayer.itemData(layerindex)
+        inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+        joinindex = self.joinVectorLayer.currentIndex()
+        joinlayerId = self.joinVectorLayer.itemData(joinindex)
+        joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        if inputlayer != None:
+            inputwkbtype = inputlayer.wkbType()
+            inputlayerwkbtext = self.getwkbtext(inputwkbtype)
+            self.inputgeometrytypelabel.setText(inputlayerwkbtext)
+        if joinlayer != None:
+            joinwkbtype = joinlayer.wkbType()
+            joinlayerwkbtext = self.getwkbtext(joinwkbtype)
+            self.joingeometrytypelabel.setText(joinlayerwkbtext)
+        self.updateui()
+
+    def useindexchanged(self, number=0):
+        self.updateui()
+       
+    def updateui(self):
         """Do the necessary updates after a layer selection has been changed."""
         self.outputDataset.setText(self.inputVectorLayer.currentText() +
                                    '_' +self.joinVectorLayer.currentText())
@@ -197,21 +224,72 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Check if the input layer is not a point layer
         if inputlayer != None:
             geometryType = inputlayer.geometryType()
+            wkbType = inputlayer.wkbType()
+            joinwkbType = QGis.WKBUnknown
+            if joinlayer != None:
+                joinwkbType = joinlayer.wkbType()
             feats = inputlayer.getFeatures()
             if geometryType == QGis.Point:
                 if not feats.next().geometry().isMultipart():
+                    self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
                     self.approximate_input_geom_cb.setVisible(False)
+                else:
+                    self.approximate_input_geom_cb.setVisible(True)
             else:
                 self.approximate_input_geom_cb.setVisible(True)
-                self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
+                #self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
+            # Update the use index checkbox:
+            if ((geometryType == QGis.Point or
+                    self.approximate_input_geom_cb.isChecked()) and
+                    not (joinwkbType == QGis.WKBPoint or joinwkbType == QGis.WKBPoint25D)):
+                self.use_index_cb.setVisible(True)
+                if (not self.approximate_input_geom_cb.isChecked()) and feats.next().geometry().isMultipart():
+                    self.use_index_cb.setCheckState(Qt.Unchecked)
+                    self.use_index_cb.setVisible(False)
+            else:
+                self.use_index_cb.setCheckState(Qt.Unchecked)
+                self.use_index_cb.setVisible(False)
             #elif geometryType == QGis.Line:
             #    geometrytypetext = 'LineString'
             #elif geometryType == QGis.Polygon:
             #    geometrytypetext = 'Polygon'
         else:
             self.approximate_input_geom_cb.setVisible(False)
-            
-            
+            self.use_index_cb.setVisible(False)
+
+    def getwkbtext(self,number):
+        if number == QGis.WKBUnknown:
+            return "Unknown"
+        elif number == QGis.WKBPoint:
+            return "Point"
+        elif number == QGis.WKBLineString:
+            return "LineString"
+        elif number == QGis.WKBPolygon:
+            return "Polygon"
+        elif number == QGis.WKBMultiPoint :
+            return "MultiPoint"
+        elif number == QGis.WKBMultiLineString :
+            return "MultiLineString"
+        elif number == QGis.WKBMultiPolygon :
+            return "MultiPolygon"
+        elif number == QGis.WKBNoGeometry :
+            return "NoGeometry"
+        elif number == QGis.WKBPoint25D:
+            return "Point25D"
+        elif number == QGis.WKBLineString25D:
+            return "LineString25D"
+        elif number == QGis.WKBPolygon25D:
+            return "Polygon25D"
+        elif number == QGis.WKBMultiPoint25D:
+            return "MultiPoint25D"
+        elif number == QGis.WKBMultiLineString25D:
+            return "MultiLineString25D"
+        elif number == QGis.WKBMultiPolygon25D:
+            return "MultiPolygon25D"
+        else:
+            return "Don't know"
+
+       
 
     def killWorker(self):
         """Kill the worker thread."""
