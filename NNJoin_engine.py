@@ -10,19 +10,21 @@ from qgis.core import QgsFeatureRequest
 # Parameters:
 #   inputvectorlayer - vector layer (QgsVectorLayer)
 #   joinvectorlayer - vector layer (QgsVectorLayer)
-#   outputlayername - string with the name of the output (memory) layer 
+#   outputlayername - string with the name of the output (memory) layer
 
 
 class Worker(QtCore.QObject):
     '''The worker that does the heavy lifting.'''
     # Define the signals used to communicate
-    progress = QtCore.pyqtSignal(float) # For reporting progress
+    progress = QtCore.pyqtSignal(float)  # For reporting progress
     status = QtCore.pyqtSignal(str)
     error = QtCore.pyqtSignal(str)
     #killed = QtCore.pyqtSignal()
-    finished = QtCore.pyqtSignal(bool, object) # For sending over the result
+    finished = QtCore.pyqtSignal(bool, object)  # For sending over the result
 
-    def __init__(self, inputvectorlayer, joinvectorlayer, outputlayername, approximateinputgeom, joinprefix, useindex):
+    def __init__(self, inputvectorlayer, joinvectorlayer,
+                 outputlayername, approximateinputgeom, joinprefix,
+                 useindex):
         """Initialise.
 
         Arguments:
@@ -38,7 +40,7 @@ class Worker(QtCore.QObject):
         useindex -- (boolean) should an index for the join layer be
                     used.
         """
-        
+
         QtCore.QObject.__init__(self)  # Essential!
         # Creating instance variables from parameters
         self.inputvectorlayer = inputvectorlayer
@@ -70,7 +72,7 @@ class Worker(QtCore.QObject):
             geometryType = self.inputvectorlayer.geometryType()
             geometrytypetext = 'Point'
             if geometryType == QGis.Point:
-                geometrytypetext = 'Point'                
+                geometrytypetext = 'Point'
             elif geometryType == QGis.Line:
                 geometrytypetext = 'LineString'
             elif geometryType == QGis.Polygon:
@@ -79,12 +81,12 @@ class Worker(QtCore.QObject):
             feats = self.inputvectorlayer.getFeatures()
             if feats.next().geometry().isMultipart():
                 multi = True
-                geometrytypetext = 'Multi'+geometrytypetext
+                geometrytypetext = 'Multi' + geometrytypetext
             feats.rewind()
             feats.close()
             geomparametertext = geometrytypetext
             # Set the coordinate reference system to the input layer's CRS
-            if self.inputvectorlayer.dataProvider().crs() != None:
+            if self.inputvectorlayer.dataProvider().crs() is not None:
                 geomparametertext = (geomparametertext + "?crs=" +
                     str(self.inputvectorlayer.dataProvider().crs().authid()))
             # Create a memory layer
@@ -117,7 +119,7 @@ class Worker(QtCore.QObject):
                 # layer inputs
                 self.status.emit('Creating index...')
                 self.joinlayerindex = QgsSpatialIndex()
-                for feat in self.joinvectorlayer.getFeatures(): 
+                for feat in self.joinvectorlayer.getFeatures():
                     if self.abort is True:
                         break
                     self.joinlayerindex.insertFeature(feat)
@@ -175,7 +177,7 @@ class Worker(QtCore.QObject):
         mindistance = float("inf")
         ## Find the closest feature!
         # Should an index be used?
-        if  ((self.useindex or
+        if ((self.useindex or
                 self.joinvectorlayer.wkbType() == QGis.WKBPoint or
                 self.joinvectorlayer.wkbType() == QGis.WKBPoint25D) and
                 (self.approximateinputgeom or
@@ -183,10 +185,10 @@ class Worker(QtCore.QObject):
                 self.inputvectorlayer.wkbType() == QGis.WKBPoint25D)):
             # Check if it is a self join!
             if self.inputvectorlayer == self.joinvectorlayer:
-                nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(),2)[1]
+                nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(), 2)[1]
                 nnfeature = self.joinvectorlayer.getFeatures(QgsFeatureRequest(nearestid)).next()
             else:
-                nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(),1)[0]
+                nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(), 1)[0]
                 nnfeature = self.joinvectorlayer.getFeatures(QgsFeatureRequest(nearestid)).next()
             mindistance = inputgeom.distance(QgsGeometry(nnfeature.geometry()))
 

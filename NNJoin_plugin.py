@@ -32,6 +32,7 @@ import processing
 import resources
 from NNJoin_gui import NNJoinDialog
 
+
 class NNJoin(object):
     """QGIS NNJoin Plugin Implementation."""
 
@@ -61,11 +62,10 @@ class NNJoin(object):
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-
         # Declare instance attributes
         self.actions = []
         self.NNJOIN = self.tr('NNJoin')
-        self.NNJOINAMP = self.tr('&NNJoin')        
+        self.NNJOINAMP = self.tr('&NNJoin')
         self.menu = self.NNJOIN
         self.toolbar = None
         #self.toolbar = self.iface.addToolBar(u'NNJoin')
@@ -87,7 +87,6 @@ class NNJoin(object):
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('NNJoin', message)
-
 
     def add_action(
         self,
@@ -150,7 +149,7 @@ class NNJoin(object):
         if whats_this is not None:
             action.setWhatsThis(whats_this)
 
-        if add_to_toolbar and self.toolbar != None:
+        if add_to_toolbar and self.toolbar is not None:
             self.toolbar.addAction(action)
 
         if add_to_menu:
@@ -173,7 +172,6 @@ class NNJoin(object):
             callback=self.run,
             parent=self.iface.mainWindow())
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -182,27 +180,26 @@ class NNJoin(object):
                 action)
             #if self.toolbar != None:
             #    self.iface.removeToolBarIcon(action)
-            self.iface.removePluginVectorMenu(self.NNJOINAMP,action)
+            self.iface.removePluginVectorMenu(self.NNJOINAMP, action)
             self.iface.removeVectorToolBarIcon(action)
             self.iface.removeToolBarIcon(action)
-
 
     def run(self):
         """Run method that initialises and starts the user interface"""
         # Create the dialog (after translation) and keep reference
         self.dlg = NNJoinDialog(self.iface)
         # Intitalise the components
-        self.dlg.progressBar.setValue( 0.0 )
+        self.dlg.progressBar.setValue(0.0)
         self.dlg.outputDataset.setText('Result')
         # Populate the input and join layer combo boxes
         self.dlg.inputVectorLayer.clear()
         for alayer in self.iface.legendInterface().layers():
             if alayer.type() == QgsMapLayer.VectorLayer:
-                self.dlg.inputVectorLayer.addItem(alayer.name(),alayer.id())
+                self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
         self.dlg.joinVectorLayer.clear()
         for alayer in self.iface.legendInterface().layers():
             if alayer.type() == QgsMapLayer.VectorLayer:
-                self.dlg.joinVectorLayer.addItem(alayer.name(),alayer.id())
+                self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
         # show the dialog (needed for the messagebar cancel button)
         self.dlg.show()
         # Run the dialog event loop
