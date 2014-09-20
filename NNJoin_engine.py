@@ -26,15 +26,16 @@ class Worker(QtCore.QObject):
         """Initialise.
 
         Arguments:
-        inputvectorlayer -- the base vector layer for the join
-        joinvectorlayer -- the join layer
-        outputlayername -- the name of the output memory layer
-        approximateinputgeom -- boolean: should the input geometry
+        inputvectorlayer -- (QgsVectorLayer) The base vector layer
+                            for the join
+        joinvectorlayer -- (QgsVectorLayer) the join layer
+        outputlayername -- (string) the name of the output memory layer
+        approximateinputgeom -- (boolean) should the input geometry
                                 be approximated?  Is only be set for
                                 non-single-point layers
-        joinprefix -- the prefix to use for the join layer attributes
-                      in the output layer
-        useindex -- boolean: should an index for the join layer be
+        joinprefix -- (string) the prefix to use for the join layer
+                      attributes in the output layer
+        useindex -- (boolean) should an index for the join layer be
                     used.
         """
         
@@ -60,7 +61,7 @@ class Worker(QtCore.QObject):
         self.feature_count = self.inputvectorlayer.featureCount()
         # The number of elements that is needed to increment the
         # progressbar - set early in run()
-        self.increment = self.feature_count // 100
+        self.increment = self.feature_count // 1000
 
     def run(self):
         try:
@@ -86,7 +87,6 @@ class Worker(QtCore.QObject):
             if self.inputvectorlayer.dataProvider().crs() != None:
                 geomparametertext = (geomparametertext + "?crs=" +
                     str(self.inputvectorlayer.dataProvider().crs().authid()))
-                pass
             # Create a memory layer
             outfields = self.inputvectorlayer.pendingFields().toList()
             jfields = self.joinvectorlayer.pendingFields().toList()
@@ -101,14 +101,18 @@ class Worker(QtCore.QObject):
             self.mem_joinlayer.startEditing()
             for field in outfields:
                 self.mem_joinlayer.dataProvider().addAttributes([field])
-            # For point input layers and approximate input geometries
-            # (centroids), an index can be used:
-            if ((geometrytypetext == 'Point' or self.approximateinputgeom) and
+            # For an index to be used, the input layer has to be a point
+            # layer, or the point layer has to be approximated to
+            # centroids.
+            # For non-point join layers, the user has to have specified
+            # the use of join feature geometry approximation through
+            # indexes.
+            if ((self.inputvectorlayer.wkbType() == QGis.WKBPoint or
+                    self.inputvectorlayer.wkbType() == QGis.WKBPoint25D or
+                    self.approximateinputgeom) and
                     (self.useindex or
                     (self.joinvectorlayer.wkbType() == QGis.WKBPoint or
-                    self.joinvectorlayer.wkbType() == QGis.WKBPoint25D)
-                    #(self.joinvectorlayer.geometryType() == QGis.Point)
-                    )):
+                    self.joinvectorlayer.wkbType() == QGis.WKBPoint25D))):
                 # Create a spatial index to speed up joining of point
                 # layer inputs
                 self.status.emit('Creating index...')
@@ -129,14 +133,16 @@ class Worker(QtCore.QObject):
             import traceback
             self.error.emit(traceback.format_exc())
             self.finished.emit(False, None)
+            self.mem_joinlayer.rollback()
         else:
+            self.mem_joinlayer.commitChanges()
             if self.abort:
                 self.finished.emit(False, None)
             else:
                 self.finished.emit(True, self.mem_joinlayer)
 
     def calculate_progress(self):
-        '''Updathe progress and emit a signal with the percantage'''
+        '''Update progress and emit a signal with the percentage'''
         self.processed = self.processed + 1
         # update the progress bar at certain increments
         if self.increment == 0 or self.processed % self.increment == 0:
@@ -144,7 +150,6 @@ class Worker(QtCore.QObject):
             if percentage_new > self.percentage:
                 self.percentage = percentage_new
                 self.progress.emit(self.percentage)
-                #self.status.emit('Task percentage: '+str(self.percentage))
 
     def kill(self):
         '''Kill the thread by setting the abort flag'''
@@ -171,14 +176,11 @@ class Worker(QtCore.QObject):
         ## Find the closest feature!
         # Should an index be used?
         if  ((self.useindex or
-                (self.joinvectorlayer.wkbType() == QGis.WKBPoint or
-                self.joinvectorlayer.wkbType() == QGis.WKBPoint25D)) and
-                #self.joinvectorlayer.geometryType() == QGis.Point) and
+                self.joinvectorlayer.wkbType() == QGis.WKBPoint or
+                self.joinvectorlayer.wkbType() == QGis.WKBPoint25D) and
                 (self.approximateinputgeom or
-                (self.inputvectorlayer.wkbType() == QGis.WKBPoint or
-                self.inputvectorlayer.wkbType() == QGis.WKBPoint25D))):
-                #(self.inputvectorlayer.geometryType() == QGis.Point and
-                #not infeature.geometry().isMultipart()))):
+                self.inputvectorlayer.wkbType() == QGis.WKBPoint or
+                self.inputvectorlayer.wkbType() == QGis.WKBPoint25D)):
             # Check if it is a self join!
             if self.inputvectorlayer == self.joinvectorlayer:
                 nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(),2)[1]
@@ -205,6 +207,9 @@ class Worker(QtCore.QObject):
                 if thisdistance < mindistance:
                     mindistance = thisdistance
                     nnfeature = inFeatJoin
+                # For 0 distance, choose the first feature
+                if mindistance == 0:
+                    break
         if not self.abort:
             atMapA = infeature.attributes()
             atMapB = nnfeature.attributes()

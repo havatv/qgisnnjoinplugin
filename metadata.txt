@@ -42,9 +42,12 @@ changelog=0.0.1
     1.0.3
     - Fixed the tags
     1.1.0
+    - Fix bug where the nearest neighbours were found using the
+      approximate geometries of the join layer index
     - Let the user choose simplified input geometries (centroids) to
       speed up the join with a spatial index
     - User interface update
+    - Code cleanup
     
 # tags are comma separated with spaces allowed
 tags=join,distance,nearest,neighbour,neighbor,spatial join

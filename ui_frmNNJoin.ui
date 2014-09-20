@@ -130,7 +130,7 @@
             <string>Uses an approximation of the geometry (bounding box) for the join</string>
            </property>
            <property name="text">
-            <string>Use index</string>
+            <string>Use spatial index</string>
            </property>
           </widget>
          </item>
