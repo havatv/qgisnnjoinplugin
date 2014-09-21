@@ -13,7 +13,7 @@ name=NNJoin
 qgisMinimumVersion=2.0
 description=Nearest neighbour join.  Join vector layers based on nearest neighbour relationships.
 version=1.1.0
-author=Håvard Tveite
+author=Håvard Tveite, NMBU
 email=havard.tveite@nmbu.no
 
 # end of mandatory metadata
