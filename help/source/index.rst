@@ -96,8 +96,8 @@ features of the *input* dataset, and for each feature finds the
 nearest neighbour in the *join* dataset.
 
 A spatial index on the join layer may speed up the join.
-*QgsSpatialIndex* provides the *nearestNeighbor* function.
-This function returns the nearest neighbour(s) to a given point
+*QgsSpatialIndex* provides the *nearestNeighbor* function, and
+this function returns the nearest neighbour(s) to a given point
 among the index geometries (which are approximations of the
 original geometries).
 
@@ -125,9 +125,9 @@ approximations) and join layers with a non-point geometry type, the
 user can choose to use an index on the join layer, but in that case
 the approximated geometry of the join layer is used in the join.
 
-For input layers with other geometry types, the
-*QgsGeometry.distance* function is used to find the distances
-between the geometries.
+For input layers with other geometry types, the default is to use
+the *QgsGeometry.distance* function to find the distance between
+geometries.
 The feature of the join layer that has the shortest distance to the
 the geometry of the input feature is chosen as the nearest
 neighbour.
@@ -142,12 +142,10 @@ layer!
     +==================================+==============+===========+==================+
     | **Point**                        | OK           | Slow!     | OK (inexact)     |
     +----------------------------------+--------------+-----------+------------------+
-    | **Non-point**                    | Slow!        | -         | -                |
+    | **Non-point**                    | Slow!        | NA        | NA               |
     +----------------------------------+--------------+-----------+------------------+
     | **Non-point, approximate**       | OK (inexact) | Slow!     | OK (inexact)     |
     +----------------------------------+--------------+-----------+------------------+
-
-
 
 If the input and join layers have different Coordinate Reference
 Systems (CRS), the input geometry is transformed to the join layer
