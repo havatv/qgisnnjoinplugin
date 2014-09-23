@@ -91,14 +91,39 @@ Multi geometries:
 Implementation
 -----------------------------------
 
-The implementation is naive, in that it loops through all
-the features of the *input* dataset, and for each feature finds
-the nearest neighbour in the *join* dataset.
+The implementation is naive, in that it loops through all the
+features of the *input* dataset, and for each feature finds the
+nearest neighbour in the *join* dataset.
 
-For input layers with geometry type Point (and centroid
-approximations) a spatial index on the join layer is created, and
-the *QgsSpatialIndex.nearestNeighbor* function of this index is used
-to find the nearest neighbour for each input feature.
+A spatial index on the join layer may speed up the join.
+*QgsSpatialIndex* provides the *nearestNeighbor* function.
+This function returns the nearest neighbour(s) to a given point
+among the index geometries (which are approximations of the
+original geometries).
+
+If the geometry type of the input layer is point, a spatial index on
+the join layer can be used.
+For join layers with geometry type point, the index geometries are
+identical to the original geometries, so the join should be exact.
+
+For join layers with geometry type other than point, the join will
+not be exact.
+
+For input layers with non-point geometry type, the user can force an
+index on the join layer to be allowed by checking
+"Approximate geometries using centroids".
+In that case the join will not be exact.
+
+For input layers with geometry type Point (or centroid
+approximations) and join layers with geometry type point, a spatial
+index on the join layer is created, and the
+*QgsSpatialIndex.nearestNeighbor* function of this index is used to
+find the nearest neighbour for each input feature.
+
+For input layers with geometry type point (or centroid
+approximations) and join layers with a non-point geometry type, the
+user can choose to use an index on the join layer, but in that case
+the approximated geometry of the join layer is used in the join.
 
 For input layers with other geometry types, the
 *QgsGeometry.distance* function is used to find the distances
@@ -109,6 +134,20 @@ neighbour.
 This means that the geometry of each feature of the input layer has
 to be compared to the geometry of all the features in the join
 layer!
+
+.. table:: NNJoin join options and performance
+
+    +----------------------------------+--------------+-----------+------------------+
+    | Layer (row: input; column: join) | Point        | Non-point | Non-point, index |
+    +==================================+==============+===========+==================+
+    | **Point**                        | OK           | Slow!     | OK (inexact)     |
+    +----------------------------------+--------------+-----------+------------------+
+    | **Non-point**                    | Slow!        | -         | -                |
+    +----------------------------------+--------------+-----------+------------------+
+    | **Non-point, approximate**       | OK (inexact) | Slow!     | OK (inexact)     |
+    +----------------------------------+--------------+-----------+------------------+
+
+
 
 If the input and join layers have different Coordinate Reference
 Systems (CRS), the input geometry is transformed to the join layer
