@@ -142,16 +142,16 @@ This means that the geometry of each feature of the input layer has
 to be compared to the geometry of all the features in the join
 layer!
 
-.. table:: NNJoin join options and performance
+.. table:: NNJoin geometry types, join options and index usage
 
     +----------------------------------+------------------------------+-----------+------------------------------+
-    | Layer (row: input; column: join) | Point                        | Non-point | Non-point, index             |
+    | Layer (row: input; column: join) | Point                        | Non-point | Non-point, index chosen      |
     +==================================+==============================+===========+==============================+
-    | **Point**                        | Spatial index used           | Slow!     | Spatial index used (inexact) |
+    | **Point**                        | Spatial index used           | No index  | Spatial index used (inexact) |
     +----------------------------------+------------------------------+-----------+------------------------------+
-    | **Non-point**                    | Slow!                        | Slow!     | NA                           |
+    | **Non-point**                    | No index                     | No index  | NA                           |
     +----------------------------------+------------------------------+-----------+------------------------------+
-    | **Non-point, approximate**       | Spatial index used (inexact) | Slow!     | Spatial index used (inexact) |
+    | **Non-point, approximate**       | Spatial index used (inexact) | No index  | Spatial index used (inexact) |
     +----------------------------------+------------------------------+-----------+------------------------------+
 
 If the input and join layers have different Coordinate Reference
