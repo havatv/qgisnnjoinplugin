@@ -15,25 +15,25 @@ Functionality
 ----------------------------
 
 - The QGIS NNPlugin can be used to join two vector layers (the *input*
-and the *join* layer).
+  and the *join* layer).
 
 - All geometry type combinations are supported.
 
 - A feature from the *input* layer is joined to the nearest
-feature in the *join* layer.
+  feature in the *join* layer.
 
 - The result of the join is a new vector layer with the same
-geometry type and coordinate reference system as the *input*
-layer.
+  geometry type and coordinate reference system as the *input*
+  layer.
 
 - Joining layers with different Coordinate Reference Systems (CRS) is
-supported.
-A warning is given when the user attempts to join layers with
-different CRS.
+  supported.
+  A warning is given when the user attempts to join layers with
+  different CRS.
 
 - Self joins are supported.
-For self joins, each feature in the layer is joined to its nearest
-neighbour within the layer.
+  For self joins, each feature in the layer is joined to its nearest
+  neighbour within the layer.
 
 The result layer
 ---------------------------------
@@ -50,16 +50,16 @@ included in the output layer.
 Options
 --------------------------
 - The user can choose to use an approximation of the input geometry
-(the centroid - *QgsGeometry.centroid*) to allow the use of spatial
-indexes also for non-point input layers.
+  (the centroid - *QgsGeometry.centroid*) to allow the use of spatial
+  indexes also for non-point input layers.
 
 - The user can choose to use a spatial index for the join layer if the
-input layer is a point layer.
-The results will not be exact (the join is based on the geometry
-approximation of the spatial index).
+  input layer is a point layer.
+  The results will not be exact (the join is based on the geometry
+  approximation of the spatial index).
 
 - The user can choose the prefix of the join layer attributes in the
-output layer.
+  output layer.
 
 - The user can choose the name of the result layer.
 
@@ -169,4 +169,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
