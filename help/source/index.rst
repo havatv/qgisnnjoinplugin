@@ -14,8 +14,8 @@ Contents:
 Functionality
 ----------------------------
 
-The QGIS NNPlugin can be used to join two vector layers (the
-*input* and the *join* layer).
+The QGIS NNPlugin can be used to join two vector layers (the *input*
+and the *join* layer).
 
 All geometry type combinations are supported.
 
@@ -42,7 +42,7 @@ The result layer will contain all the attributes of both
 the *input* and *join* layers plus a new attribute
 "distance" that contains the distance between the joined features.
 The attributes from the *join* layer will get a prefix
-(the default "join_", but this can be set by the user).
+(the default "join\_", but this can be set by the user).
 If a join prefix is not used, attributes from the join layer that
 have the same name as attributes in the input layer will not be
 included in the output layer.
@@ -50,10 +50,18 @@ included in the output layer.
 Options
 --------------------------
 The user can choose to use an approximation of the input geometry
-(the centroid) to allow the use of indexes also for non-point layers.
+(the centroid - *QgsGeometry.centroid*) to allow the use of spatial
+indexes also for non-point input layers.
+
+The user can choose to use a spatial index for the join layer if the
+input layer is a point layer.
+The results will not be exact (the join is based on the geometry
+approximation of the spatial index).
 
 The user can choose the prefix of the join layer attributes in the
 output layer.
+
+The user can choose the name of the result layer.
 
 Performance
 --------------------------
