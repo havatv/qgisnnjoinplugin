@@ -14,24 +14,24 @@ Contents:
 Functionality
 ----------------------------
 
-The QGIS NNPlugin can be used to join two vector layers (the *input*
+- The QGIS NNPlugin can be used to join two vector layers (the *input*
 and the *join* layer).
 
-All geometry type combinations are supported.
+- All geometry type combinations are supported.
 
-A feature from the *input* layer is joined to the nearest
+- A feature from the *input* layer is joined to the nearest
 feature in the *join* layer.
 
-The result of the join is a new vector layer with the same
+- The result of the join is a new vector layer with the same
 geometry type and coordinate reference system as the *input*
 layer.
 
-Joining layers with different Coordinate Reference Systems (CRS) is
+- Joining layers with different Coordinate Reference Systems (CRS) is
 supported.
 A warning is given when the user attempts to join layers with
 different CRS.
 
-Self joins are supported.
+- Self joins are supported.
 For self joins, each feature in the layer is joined to its nearest
 neighbour within the layer.
 
@@ -49,19 +49,19 @@ included in the output layer.
 
 Options
 --------------------------
-The user can choose to use an approximation of the input geometry
+- The user can choose to use an approximation of the input geometry
 (the centroid - *QgsGeometry.centroid*) to allow the use of spatial
 indexes also for non-point input layers.
 
-The user can choose to use a spatial index for the join layer if the
+- The user can choose to use a spatial index for the join layer if the
 input layer is a point layer.
 The results will not be exact (the join is based on the geometry
 approximation of the spatial index).
 
-The user can choose the prefix of the join layer attributes in the
+- The user can choose the prefix of the join layer attributes in the
 output layer.
 
-The user can choose the name of the result layer.
+- The user can choose the name of the result layer.
 
 Performance
 --------------------------
@@ -99,9 +99,8 @@ Multi geometries:
 Implementation
 -----------------------------------
 
-The implementation is naive, in that it loops through all the
-features of the *input* dataset, and for each feature finds the
-nearest neighbour in the *join* dataset.
+Looping through the features of the *input* layer, the nearest
+neighbour to each feature is identified in the *join* layer.
 
 A spatial index on the join layer may speed up the join.
 *QgsSpatialIndex* provides the *nearestNeighbor* function, and
