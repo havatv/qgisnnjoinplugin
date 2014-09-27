@@ -27,7 +27,9 @@ Functionality
   layer.
 
 - Joining layers with different Coordinate Reference Systems (CRS) is
-  supported.
+  supported, as long as the join layer coordinate system is a
+  projected CRS.
+
   A warning is given when the user attempts to join layers with
   different CRS.
 
@@ -157,6 +159,9 @@ layer!
 If the input and join layers have different Coordinate Reference
 Systems (CRS), the input geometry is transformed to the join layer
 CRS before the join is performed.
+
+**The join layer has to have a projected CRS for the distance
+calculations to work**.
 
 Versions
 ----------------------------------
