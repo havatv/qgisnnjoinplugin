@@ -78,7 +78,7 @@
           <string>Use approximate input geometries.&lt;br&gt;This will enable the use of a spatial index - could speed up the join considerably.</string>
          </property>
          <property name="text">
-          <string>Approximate geometries using centroids</string>
+          <string>Approximate geometries by centroids</string>
          </property>
         </widget>
        </item>
@@ -130,7 +130,7 @@
             <string>Uses an approximation of the geometry (bounding box) for the join</string>
            </property>
            <property name="text">
-            <string>Use spatial index</string>
+            <string>Approximate by index geometries</string>
            </property>
           </widget>
          </item>

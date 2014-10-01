@@ -12,7 +12,7 @@
 name=NNJoin
 qgisMinimumVersion=2.0
 description=Nearest neighbour join.  Join vector layers based on nearest neighbour relationships.
-version=1.1.0
+version=1.2.0
 author=Håvard Tveite, NMBU
 email=havard.tveite@nmbu.no
 
@@ -42,19 +42,19 @@ changelog=0.0.1
     1.0.3
     - Fixed the tags
     1.1.0
-    - Fix bug where the nearest neighbours were found using the
-      approximate geometries of the join layer index
-    - Let the user choose simplified input geometries (centroids) to
-      speed up the join with a spatial index
+    - Fix bug where the nearest neighbours were found using the approximate geometries of the join layer index
+    - Let the user choose simplified input geometries (centroids) to speed up the join with a spatial index
     - User interface update
     - Code cleanup
+    1.2.0
+    - Join layer index used for join layers with geometry type linestring and polygon
     
 # tags are comma separated with spaces allowed
-tags=join,distance,nearest,neighbour,neighbor,spatial join
+tags=join,distance,nearest,neighbour,neighbor,spatial join,closest,vector layer,vector
 
 homepage=http://hub.qgis.org/projects/nnjoin
 #http://arken.umb.no/~havatv/gis/qgisplugins/NNJoin
-tracker=https://hub.qgis.org/projects/nnjoin/issues
+tracker=https://github.com/havatv/qgisnnjoinplugin/issues
 repository=https://github.com/havatv/qgisnnjoinplugin.git
 icon=nnjoin.png
 # experimental flag

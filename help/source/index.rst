@@ -1,7 +1,4 @@
-.. NNJoin documentation master file, created by
-   sphinx-quickstart on Sun Feb 12 17:11:03 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. NNJoin documentation master file.
 
 The QGIS NNJoin Plugin
 ============================================
@@ -32,6 +29,9 @@ Functionality
 
   A warning is given when the user attempts to join layers with
   different CRS.
+  
+  The join and distance calculations is performed using the join
+  layer CRS.
 
 - Self joins are supported.
   For self joins, each feature in the layer is joined to its nearest
@@ -55,10 +55,10 @@ Options
   (the centroid - *QgsGeometry.centroid*) to allow the use of spatial
   indexes also for non-point input layers.
 
-- The user can choose to use a spatial index for the join layer if the
-  input layer is a point layer.
-  The results will not be exact (the join is based on the geometry
-  approximation of the spatial index).
+- If the input layer is a point layer and the join layer is not a
+  point layer, the user can choose to base the join on the simplified
+  geometries of the spatial index for the join layer.
+  The results will not be exact, but the speed should increase.
 
 - The user can choose the prefix of the join layer attributes in the
   output layer.
@@ -77,7 +77,7 @@ usefulness of the plugin (**OK** or **slow**).
     +----------------------------------+-------+-------+---------+
     | Layer (row: input; column: join) | Point | Line  | Polygon |
     +==================================+=======+=======+=========+
-    | **Point**                        | OK    | Slow! | Slow!   |
+    | **Point**                        | OK    | OK    | OK      |
     +----------------------------------+-------+-------+---------+
     | **Line**                         | Slow! | Slow! | Slow!   |
     +----------------------------------+-------+-------+---------+
@@ -110,33 +110,27 @@ this function returns the nearest neighbour(s) to a given point
 among the index geometries (which are approximations of the
 original geometries).
 
-If the geometry type of the input layer is point, a spatial index on
-the join layer can be used.
-For join layers with geometry type point, the index geometries are
-identical to the original geometries, so the join should be exact.
+For input layers with geometry type point (or centroid
+approximation), a spatial index on the join layer will be used.
 
-For join layers with geometry type other than point, the join will
-not be exact.
+For join layers with geometry type other than point, the user can
+choose to do an inexact join based on the join layer index
+geometries to speed up the join by checking
+"Approximate by index geometries".
 
-For input layers with non-point geometry type, the user can force an
-index on the join layer to be allowed by checking
-"Approximate geometries using centroids".
-In that case the join will not be exact.
+For input layers with non-point geometry type, the user can specify
+that the geometry centroids are used for the join by checking
+"Approximate geometries by centroids".
+This means that the join will not be exact with respect to the
+original input layer geometries.
 
-For input layers with geometry type Point (or centroid
-approximations) and join layers with geometry type point, a spatial
-index on the join layer is created, and the
-*QgsSpatialIndex.nearestNeighbor* function of this index is used to
+When a spatial index on the join layer is available, the
+*QgsSpatialIndex.nearestNeighbor* function of the index is used to
 find the nearest neighbour for each input feature.
 
-For input layers with geometry type point (or centroid
-approximations) and join layers with a non-point geometry type, the
-user can choose to use an index on the join layer, but in that case
-the approximated geometry of the join layer is used in the join.
-
-For input layers with other geometry types, the default is to use
-the *QgsGeometry.distance* function to find the distance between
-geometries.
+For input layers with other geometry types than point, the default
+is to use the *QgsGeometry.distance* function to find the distance
+between geometries.
 The feature of the join layer that has the shortest distance to the
 the geometry of the input feature is chosen as the nearest
 neighbour.
@@ -144,29 +138,39 @@ This means that the geometry of each feature of the input layer has
 to be compared to the geometry of all the features in the join
 layer!
 
-.. table:: NNJoin geometry types, join options and index usage
+.. table:: NNJoin geometry types, join options and index usage (non-multi geometry types)
 
-    +----------------------------------+------------------------------+-----------+------------------------------+
-    | Layer (row: input; column: join) | Point                        | Non-point | Non-point, index chosen      |
-    +==================================+==============================+===========+==============================+
-    | **Point**                        | Spatial index used           | No index  | Spatial index used (inexact) |
-    +----------------------------------+------------------------------+-----------+------------------------------+
-    | **Non-point**                    | No index                     | No index  | NA                           |
-    +----------------------------------+------------------------------+-----------+------------------------------+
-    | **Non-point, approximate**       | Spatial index used (inexact) | No index  | Spatial index used (inexact) |
-    +----------------------------------+------------------------------+-----------+------------------------------+
+    +----------------------------------+------------------------------+--------------------+------------------------------+
+    | Layer (row: input; column: join) | Point                        | Non-point          | Non-point, index chosen      |
+    +==================================+==============================+====================+==============================+
+    | **Point**                        | Spatial index used           | Spatial index used | Spatial index used (inexact) |
+    +----------------------------------+------------------------------+--------------------+------------------------------+
+    | **Non-point**                    | No index                     | No index           | NA                           |
+    +----------------------------------+------------------------------+--------------------+------------------------------+
+    | **Non-point, approximate**       | Spatial index used (inexact) | No index           | Spatial index used (inexact) |
+    +----------------------------------+------------------------------+--------------------+------------------------------+
 
 If the input and join layers have different Coordinate Reference
 Systems (CRS), the input geometry is transformed to the join layer
 CRS before the join is performed.
 
-**The join layer has to have a projected CRS for the distance
-calculations to work**.
+The join will fail if transformation between the input layer CRS and
+the join layer CRS is not possible.
+
+**The join layer should have a projected CRS**.
 
 Versions
 ----------------------------------
 
-The current version is 1.1.0
+The current version is 1.2.0
+
+Misc
+------
+
+QGIS Plugin page: NNJoinPlugin_
+
+Code repository: NNJoinRepository_
+
 
 Indices and tables
 ==================
@@ -174,3 +178,7 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+.. _NNJoinRepository: https://github.com/havatv/qgisnnjoinplugin.git
+.. _NNJoinPlugin: https://plugins.qgis.org/plugins/NNJoin/

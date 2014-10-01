@@ -24,7 +24,7 @@ class Worker(QtCore.QObject):
 
     def __init__(self, inputvectorlayer, joinvectorlayer,
                  outputlayername, approximateinputgeom, joinprefix,
-                 useindex):
+                 usejoinlayerindex):
         """Initialise.
 
         Arguments:
@@ -37,8 +37,9 @@ class Worker(QtCore.QObject):
                                 non-single-point layers
         joinprefix -- (string) the prefix to use for the join layer
                       attributes in the output layer
-        useindex -- (boolean) should an index for the join layer be
-                    used.
+        usejoinlayerindex -- (boolean) should an index for the join
+                             layer be used.  Will only use the index
+                             geometry approximations for the join
         """
 
         QtCore.QObject.__init__(self)  # Essential!
@@ -48,7 +49,7 @@ class Worker(QtCore.QObject):
         self.outputlayername = outputlayername
         self.approximateinputgeom = approximateinputgeom
         self.joinprefix = joinprefix
-        self.useindex = useindex
+        self.usejoinlayerindex = usejoinlayerindex
         # Creating instance variables for the progress bar ++
         # Number of elements that have been processed - updated by
         # calculate_progress
@@ -104,33 +105,31 @@ class Worker(QtCore.QObject):
             for field in outfields:
                 self.mem_joinlayer.dataProvider().addAttributes([field])
             # For an index to be used, the input layer has to be a point
-            # layer, or the point layer has to be approximated to
-            # centroids.
-            # For non-point join layers, the user has to have specified
-            # the use of join feature geometry approximation through
-            # indexes.
-            if ((self.inputvectorlayer.wkbType() == QGis.WKBPoint or
+            # layer, or the input layer geometries have to be approximated
+            # to centroids.
+            # (Could be extended to multipoint)
+            if (self.inputvectorlayer.wkbType() == QGis.WKBPoint or
                     self.inputvectorlayer.wkbType() == QGis.WKBPoint25D or
-                    self.approximateinputgeom) and
-                    (self.useindex or
-                    (self.joinvectorlayer.wkbType() == QGis.WKBPoint or
-                    self.joinvectorlayer.wkbType() == QGis.WKBPoint25D))):
+                    self.approximateinputgeom):
                 # Create a spatial index to speed up joining of point
                 # layer inputs
-                self.status.emit('Creating index...')
+                self.status.emit('Creating index on the join layer...')
                 self.joinlayerindex = QgsSpatialIndex()
                 for feat in self.joinvectorlayer.getFeatures():
+                    # Allow user abort
                     if self.abort is True:
                         break
                     self.joinlayerindex.insertFeature(feat)
-                self.status.emit('Finised creating index!')
+                self.status.emit('Finised creating join layer index!')
+            # Do the join!
             features = self.inputvectorlayer.getFeatures()
             for feat in features:
+                # Allow user abort
                 if self.abort is True:
                     break
                 self.do_indexjoin(feat)
                 self.calculate_progress()
-            self.status.emit('Finished')
+            self.status.emit('Join finished')
         except:
             import traceback
             self.error.emit(traceback.format_exc())
@@ -141,6 +140,7 @@ class Worker(QtCore.QObject):
             if self.abort:
                 self.finished.emit(False, None)
             else:
+                self.status.emit('Delivering the memory layer...')
                 self.finished.emit(True, self.mem_joinlayer)
 
     def calculate_progress(self):
@@ -166,18 +166,28 @@ class Worker(QtCore.QObject):
         inputgeom = QgsGeometry(infeature.geometry())
         # Working with approximate geometries?
         if self.approximateinputgeom:
+            # Use the centroid as the input geometry
             inputgeom = QgsGeometry(infeature.geometry()).centroid()
-        # Check if the coordinate systems are equal
+        # Check if the coordinate systems are equal, if not transform
         if (self.inputvectorlayer.dataProvider().crs() !=
-                        self.joinvectorlayer.dataProvider().crs()):
-            inputgeom.transform(QgsCoordinateTransform(
-                self.inputvectorlayer.dataProvider().crs(),
-                self.joinvectorlayer.dataProvider().crs()))
+                    self.joinvectorlayer.dataProvider().crs()):
+            try:
+                inputgeom.transform(QgsCoordinateTransform(
+                        self.inputvectorlayer.dataProvider().crs(),
+                        self.joinvectorlayer.dataProvider().crs()))
+            except:
+                self.error.emit(self.tr('CRS Transformation error!'))
+                self.abort = True
+                return
         nnfeature = None
         mindistance = float("inf")
         ## Find the closest feature!
-        # Should an index be used?
-        if ((self.useindex or
+        # The join index nearest neighbour function can be used as it
+        # is when the join layer is a point layer (or the user wants
+        # the index geometries to be used).  But the input layer
+        # geometry type has to be point (either original or centroid
+        # approximations
+        if (   (self.usejoinlayerindex or
                 self.joinvectorlayer.wkbType() == QGis.WKBPoint or
                 self.joinvectorlayer.wkbType() == QGis.WKBPoint25D) and
                 (self.approximateinputgeom or
@@ -185,18 +195,46 @@ class Worker(QtCore.QObject):
                 self.inputvectorlayer.wkbType() == QGis.WKBPoint25D)):
             # Check if it is a self join!
             if self.inputvectorlayer == self.joinvectorlayer:
+                # Pick the second closest neighbour!
+                # (the first is the point itself)
                 nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(), 2)[1]
                 nnfeature = self.joinvectorlayer.getFeatures(QgsFeatureRequest(nearestid)).next()
+            # Not a self join:
             else:
                 nearestid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(), 1)[0]
                 nnfeature = self.joinvectorlayer.getFeatures(QgsFeatureRequest(nearestid)).next()
-            mindistance = inputgeom.distance(QgsGeometry(nnfeature.geometry()))
-
+            mindistance = inputgeom.distance(nnfeature.geometry())
+        # Use the join layer index to speed up the join when the join
+        # layer geometry type is polygon or line and the input layer
+        # geometry type is point
+        elif ( (self.joinvectorlayer.wkbType() == QGis.WKBPolygon or
+                self.joinvectorlayer.wkbType() == QGis.WKBPolygon25D or
+                self.joinvectorlayer.wkbType() == QGis.WKBLineString or
+                self.joinvectorlayer.wkbType() == QGis.WKBLineString25D) and
+                (self.approximateinputgeom or
+                self.inputvectorlayer.wkbType() == QGis.WKBPoint or
+                self.inputvectorlayer.wkbType() == QGis.WKBPoint25D)):
+            nearestindexid = self.joinlayerindex.nearestNeighbor(inputgeom.asPoint(), 1)[0]
+            nnfeature = self.joinvectorlayer.getFeatures(QgsFeatureRequest(nearestindexid)).next()
+            mindistance = inputgeom.distance(nnfeature.geometry())
+            px = inputgeom.asPoint().x()
+            py = inputgeom.asPoint().y()
+            closefeatureids = self.joinlayerindex.intersects(QgsRectangle(px - mindistance, py - mindistance, px + mindistance, py + mindistance))
+            for closefeatureid in closefeatureids:
+                if self.abort is True:
+                    break
+                closefeature = self.joinvectorlayer.getFeatures(QgsFeatureRequest(closefeatureid)).next()
+                thisdistance = inputgeom.distance(closefeature.geometry())
+                if thisdistance < mindistance:
+                    mindistance = thisdistance
+                    nnfeature = closefeature
+                if mindistance == 0:
+                    break
+        # Join with no index use
         else:
+            # Get all the features from the join layer!
             joinfeatures = self.joinvectorlayer.getFeatures()
-            count = 0
             for inFeatJoin in joinfeatures:
-                count = count + 1
                 if self.abort is True:
                     break
                 joingeom = QgsGeometry(inFeatJoin.geometry())
@@ -221,12 +259,12 @@ class Worker(QtCore.QObject):
             attrs.append(mindistance)
 
             outFeat = QgsFeature()
-            # Use the original geometry!:
+            # Use the original input layer geometry!:
             outFeat.setGeometry(QgsGeometry(infeature.geometry()))
+            # Use the modified input layer geometry (could be centroid)
+            #outFeat.setGeometry(QgsGeometry(inputgeom))
             outFeat.setAttributes(attrs)
-            #self.status.emit('iter_features calculating progress')
             self.calculate_progress()
-            #self.status.emit('iter_features progress calculated')
             self.mem_joinlayer.dataProvider().addFeatures([outFeat])
 
     def tr(self, message):
@@ -241,4 +279,4 @@ class Worker(QtCore.QObject):
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('NNJoinDialog', message)
+        return QCoreApplication.translate('NNJoinEngine', message)

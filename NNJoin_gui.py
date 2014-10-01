@@ -173,9 +173,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
 
     def workerError(self, exception_string):
         """Report an error from the worker."""
-        QgsMessageLog.logMessage(self.tr('Worker failed - exception') +
-                                 ': ' + str(exception_string), self.NNJOIN,
-                                 QgsMessageLog.CRITICAL)
+        #QgsMessageLog.logMessage(self.tr('Worker failed - exception') +
+        #                         ': ' + str(exception_string), self.NNJOIN,
+        #                         QgsMessageLog.CRITICAL)
+        self.showError(exception_string)
 
     def workerInfo(self, message_string):
         """Report an info message from the worker."""
