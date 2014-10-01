@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>462</width>
-    <height>339</height>
+    <width>473</width>
+    <height>331</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,13 +22,16 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>13</x>
      <y>10</y>
-     <width>446</width>
-     <height>321</height>
+     <width>451</width>
+     <height>311</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_6">
+    <property name="spacing">
+     <number>2</number>
+    </property>
     <item>
      <widget class="QGroupBox" name="groupBox_1">
       <property name="sizePolicy">
@@ -41,6 +44,12 @@
        <string>Input vector layer</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
@@ -58,6 +67,11 @@
          </item>
          <item>
           <widget class="QLabel" name="label_inputgeom">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>Geometry type:</string>
            </property>
@@ -65,6 +79,12 @@
          </item>
          <item>
           <widget class="QLabel" name="inputgeometrytypelabel">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <italic>true</italic>
+            </font>
+           </property>
            <property name="text">
             <string notr="true">Unknown</string>
            </property>
@@ -91,6 +111,12 @@
        <string>Join vector layer</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
@@ -108,6 +134,11 @@
          </item>
          <item>
           <widget class="QLabel" name="label_2">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>Geometry type:</string>
            </property>
@@ -115,6 +146,12 @@
          </item>
          <item>
           <widget class="QLabel" name="joingeometrytypelabel">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <italic>true</italic>
+            </font>
+           </property>
            <property name="text">
             <string>Unknown</string>
            </property>
@@ -148,21 +185,28 @@
           </spacer>
          </item>
          <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Join prefix:</string>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <property name="spacing">
+            <number>1</number>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="joinPrefix">
-           <property name="toolTip">
-            <string>The prefix used for the join layer attributes in the result layer.&lt;br&gt;Without a prefix, if a join layer attribute has the same name as an input layer attribute, it will not be included in the result layer.</string>
-           </property>
-           <property name="text">
-            <string>join_</string>
-           </property>
-          </widget>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Join prefix:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="joinPrefix">
+             <property name="toolTip">
+              <string>The prefix used for the join layer attributes in the result layer.&lt;br&gt;Without a prefix, a join layer attribute that has the same name as an input layer attribute will not be included in the result layer.</string>
+             </property>
+             <property name="text">
+              <string>join_</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -175,6 +219,12 @@
        <string>Output layer</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QLineEdit" name="outputDataset">
          <property name="toolTip">

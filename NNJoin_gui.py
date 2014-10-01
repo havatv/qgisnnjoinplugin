@@ -77,8 +77,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         inpIndexCh.connect(self.layerchanged)
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
         joinIndexCh.connect(self.layerchanged)
-        self.iface.legendInterface().itemAdded.connect(self.layerindexchanged)
-        self.iface.legendInterface().itemRemoved.connect(self.layerindexchanged)
+        self.iface.legendInterface().itemAdded.connect(self.layerlistchanged)
+        self.iface.legendInterface().itemRemoved.connect(self.layerlistchanged)
         # pyuic4 uses old style connections, so the disconnect has
         # to be old style!
         # so does not work with pyuic4:
@@ -89,6 +89,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.mem_layer = None
         self.worker = None
         self.NNJOIN = self.tr('NNJoin')
+        self.inputlayerid = None
+        self.joinlayerid = None
+        self.layerlistchanging = False
 
     def startWorker(self):
         """Initialises and starts the worker thread."""
@@ -104,6 +107,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         if joinlayer is None:
             self.showError(self.tr('No join layer defined'))
             return
+        if joinlayer is not None and joinlayer.crs().geographicFlag():
+            self.showWarning('Geographic CRS used for the join layer -'
+                             ' distances will be in decimal degrees!')
         outputlayername = self.outputDataset.text()
         approximateinputgeom = self.approximate_input_geom_cb.isChecked()
         joinprefix = self.joinPrefix.text()
@@ -160,7 +166,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                      self.NNJOIN, QgsMessageLog.INFO)
             mem_layer.dataProvider().updateExtents()
             mem_layer.commitChanges()
+            self.layerlistchanging = True
             QgsMapLayerRegistry.instance().addMapLayer(mem_layer)
+            self.layerlistchanging = False
         else:
             # notify the user that something went wrong
             if not ok:
@@ -186,43 +194,75 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def layerchanged(self, number=0):
         """Do the necessary updates after a layer selection has
            been changed."""
+        # If the layer list is being updated, don't do anything
+	if self.layerlistchanging:
+	    return
         layerindex = self.inputVectorLayer.currentIndex()
         layerId = self.inputVectorLayer.itemData(layerindex)
+	self.inputlayerid = layerId
         inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
+	self.joinlayerid = joinlayerId
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        # Update the UI label with input geometry type information
         if inputlayer is not None:
             inputwkbtype = inputlayer.wkbType()
             inputlayerwkbtext = self.getwkbtext(inputwkbtype)
             self.inputgeometrytypelabel.setText(inputlayerwkbtext)
+        # Update the UI label with join geometry type information
         if joinlayer is not None:
             joinwkbtype = joinlayer.wkbType()
             joinlayerwkbtext = self.getwkbtext(joinwkbtype)
             self.joingeometrytypelabel.setText(joinlayerwkbtext)
         if inputlayer is not None and joinlayer is not None:
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+        # Check the coordinate systems
+        # Geographic? - give a warning!
+        if joinlayer is not None and joinlayer.crs().geographicFlag():
+            self.showWarning('Geographic CRS used for the join layer -'
+                             ' distances will be in decimal degrees!')
+        # Different CRSs? - give a warning!
+        if (inputlayer is not None and joinlayer is not None and
+                inputlayer.dataProvider().crs() !=
+                joinlayer.dataProvider().crs()):
+            self.showWarning('Layers have different CRS!')
         self.updateui()
 
     def useindexchanged(self, number=0):
         self.updateui()
 
-    def layerindexchanged(self):
+    def layerlistchanged(self):
+        self.layerlistchanging = True
         # Repopulate the input and join layer combo boxes
+        # Save the currently selected input layer
+        inputlayerid = self.inputlayerid
         self.inputVectorLayer.clear()
         for alayer in self.iface.legendInterface().layers():
             if alayer.type() == QgsMapLayer.VectorLayer:
                 self.inputVectorLayer.addItem(alayer.name(), alayer.id())
+        # Set the previous selection
+        for i in range (self.inputVectorLayer.count()):
+            if self.inputVectorLayer.itemData(i) == inputlayerid:
+                self.inputVectorLayer.setCurrentIndex(i)
+        # Save the currently selected join layer
+        joinlayerid = self.joinlayerid
         self.joinVectorLayer.clear()
         for alayer in self.iface.legendInterface().layers():
             if alayer.type() == QgsMapLayer.VectorLayer:
                 self.joinVectorLayer.addItem(alayer.name(), alayer.id())
-
+        # Set the previous selection
+        for i in range (self.joinVectorLayer.count()):
+            if self.joinVectorLayer.itemData(i) == joinlayerid:
+                self.joinVectorLayer.setCurrentIndex(i)
+        self.layerlistchanging = False
         self.updateui()
 
     def updateui(self):
         """Do the necessary updates after a layer selection has
            been changed."""
+        #if self.layerlistchanged:
+        #    return
         self.outputDataset.setText(self.inputVectorLayer.currentText() +
                                    '_' + self.joinVectorLayer.currentText())
         layerindex = self.inputVectorLayer.currentIndex()
@@ -231,11 +271,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
-        if (inputlayer is not None and joinlayer is not None and
-                inputlayer.dataProvider().crs() !=
-                joinlayer.dataProvider().crs()):
-            self.showWarning('Layers have different CRS - results may'
-                             'not be correct')
         if inputlayer is not None:
             geometryType = inputlayer.geometryType()
             wkbType = inputlayer.wkbType()
@@ -243,7 +278,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             if joinlayer is not None:
                 joinwkbType = joinlayer.wkbType()
             feats = inputlayer.getFeatures()
-            # It the input layer is not a point layer, allow choosing
+            # If the input layer is not a point layer, allow choosing
             # approximate geometry (centroid)
             if wkbType == QGis.WKBPoint or wkbType == QGis.WKBPoint25D:
                 self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
