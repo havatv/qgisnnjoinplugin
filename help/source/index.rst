@@ -7,7 +7,10 @@ The QGIS NNJoin Plugin
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
+   :numbered:
+
+   self
 
 Functionality
 =================
@@ -69,11 +72,10 @@ Options
 Performance
 ===============
 
-Below is a table that cross tabulates *input layer* (rows)
-and *join* layer (column) geometry types, and indicates the
-usefulness of the plugin (**OK** or **slow** - **OK** means
-that the operation is O(NlogN), while **slow** means that the
-operation is O(|N2|).
+Below is a table that cross tabulates *input layer* (rows) and
+*join* layer (column) geometry types, and indicates the usefulness
+of the plugin (**OK** - the operation is O(NlogM) / O(NlogN), or
+**Slow** - the operation is O(NM) / O(|N2|).
 
 .. table:: Efficiency of NNJoin for simple geometries
 
@@ -82,9 +84,9 @@ operation is O(|N2|).
     +==================================+=======+=======+=========+
     | **Point**                        | OK    | OK    | OK      |
     +----------------------------------+-------+-------+---------+
-    | **Line**                         | Slow! | Slow! | Slow!   |
+    | **Line**                         | Slow  | Slow  | Slow    |
     +----------------------------------+-------+-------+---------+
-    | **Polygon**                      | Slow! | Slow! | Slow!   |
+    | **Polygon**                      | Slow  | Slow  | Slow    |
     +----------------------------------+-------+-------+---------+
 
 Multi geometries:
@@ -94,11 +96,11 @@ Multi geometries:
     +----------------------------------+------------+------------+--------------+
     | Layer (row: input; column: join) | MultiPoint | MultiLine  | MultiPolygon |
     +==================================+============+============+==============+
-    | **MultiPoint**                   | Slow!      | Slow!      | Slow!        |
+    | **MultiPoint**                   | Slow       | Slow       | Slow         |
     +----------------------------------+------------+------------+--------------+
-    | **MultiLine**                    | Slow!      | Slow!      | Slow!        |
+    | **MultiLine**                    | Slow       | Slow       | Slow         |
     +----------------------------------+------------+------------+--------------+
-    | **MultiPolygon**                 | Slow!      | Slow!      | Slow!        |
+    | **MultiPolygon**                 | Slow       | Slow       | Slow         |
     +----------------------------------+------------+------------+--------------+
 
 Implementation
@@ -192,11 +194,11 @@ The current version is 1.2.0
 Links
 =======
 
-NNJoin QGIS Plugin page: NNJoinPlugin_
+`NNJoin Plugin`_
 
-NNJoin code repository: NNJoinRepository_
+`NNJoin code repository`_
 
-NNJoin issues / bug reporting: NNJoinIssues_
+`NNJoin issues`_
 
 Indices and tables
 ==================
@@ -206,8 +208,7 @@ Indices and tables
 * :ref:`search`
 
 
-.. _NNJoinRepository: https://github.com/havatv/qgisnnjoinplugin.git
-.. _NNJoinPlugin: https://plugins.qgis.org/plugins/NNJoin/
-.. _NNJoinIssues: https://github.com/havatv/qgisnnjoinplugin/issues
-
-.. |N2|: N\ :sup:`2`
+.. _NNJoin code repository: https://github.com/havatv/qgisnnjoinplugin.git
+.. _NNJoin Plugin: https://plugins.qgis.org/plugins/NNJoin/
+.. _NNJoin issues: https://github.com/havatv/qgisnnjoinplugin/issues
+.. |N2| replace:: N\ :sup:`2`
