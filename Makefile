@@ -28,7 +28,6 @@ LOCALES = nn nb
 
 # translation
 SOURCES = \
-	__init__.py \
     NNJoin_plugin.py \
     NNJoin_gui.py \
     NNJoin_engine.py

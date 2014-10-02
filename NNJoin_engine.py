@@ -20,7 +20,8 @@ class Worker(QtCore.QObject):
     status = QtCore.pyqtSignal(str)
     error = QtCore.pyqtSignal(str)
     #killed = QtCore.pyqtSignal()
-    finished = QtCore.pyqtSignal(bool, object)  # For sending over the result
+    # Signal for sending over the result:
+    finished = QtCore.pyqtSignal(bool, object)
 
     def __init__(self, inputvectorlayer, joinvectorlayer,
                  outputlayername, approximateinputgeom, joinprefix,
@@ -68,7 +69,7 @@ class Worker(QtCore.QObject):
 
     def run(self):
         try:
-            self.status.emit('Started!')
+            #self.status.emit('Started!')
             # Check the geometry type
             geometryType = self.inputvectorlayer.geometryType()
             geometrytypetext = 'Point'
@@ -120,7 +121,7 @@ class Worker(QtCore.QObject):
                     if self.abort is True:
                         break
                     self.joinlayerindex.insertFeature(feat)
-                self.status.emit('Finised creating join layer index!')
+                self.status.emit('Finised creating index on the join layer!')
             # Do the join!
             features = self.inputvectorlayer.getFeatures()
             for feat in features:
@@ -219,7 +220,10 @@ class Worker(QtCore.QObject):
             mindistance = inputgeom.distance(nnfeature.geometry())
             px = inputgeom.asPoint().x()
             py = inputgeom.asPoint().y()
-            closefeatureids = self.joinlayerindex.intersects(QgsRectangle(px - mindistance, py - mindistance, px + mindistance, py + mindistance))
+            closefeatureids = self.joinlayerindex.intersects(
+                                  QgsRectangle(px - mindistance,
+                                  py - mindistance, px + mindistance,
+                                  py + mindistance))
             for closefeatureid in closefeatureids:
                 if self.abort is True:
                     break

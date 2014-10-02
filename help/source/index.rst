@@ -1,7 +1,8 @@
 .. NNJoin documentation master file.
 
+***********************
 The QGIS NNJoin Plugin
-============================================
+***********************
 
 Contents:
 
@@ -9,7 +10,7 @@ Contents:
    :maxdepth: 2
 
 Functionality
-----------------------------
+=================
 
 - The QGIS NNPlugin can be used to join two vector layers (the *input*
   and the *join* layer).
@@ -38,7 +39,7 @@ Functionality
   neighbour within the layer.
 
 The result layer
----------------------------------
+=================
 
 The result layer will contain all the attributes of both
 the *input* and *join* layers plus a new attribute
@@ -50,7 +51,7 @@ have the same name as attributes in the input layer will not be
 included in the output layer.
 
 Options
---------------------------
+=============
 - The user can choose to use an approximation of the input geometry
   (the centroid - *QgsGeometry.centroid*) to allow the use of spatial
   indexes also for non-point input layers.
@@ -66,11 +67,13 @@ Options
 - The user can choose the name of the result layer.
 
 Performance
---------------------------
+===============
 
 Below is a table that cross tabulates *input layer* (rows)
 and *join* layer (column) geometry types, and indicates the
-usefulness of the plugin (**OK** or **slow**).
+usefulness of the plugin (**OK** or **slow** - **OK** means
+that the operation is O(NlogN), while **slow** means that the
+operation is O(|N2|).
 
 .. table:: Efficiency of NNJoin for simple geometries
 
@@ -99,56 +102,71 @@ Multi geometries:
     +----------------------------------+------------+------------+--------------+
 
 Implementation
------------------------------------
+================
 
 Looping through the features of the *input* layer, the nearest
 neighbour to each feature is identified in the *join* layer.
 
-A spatial index on the join layer may speed up the join.
+A spatial index on the join layer will normally speed up the join.
 *QgsSpatialIndex* provides the *nearestNeighbor* function, and
 this function returns the nearest neighbour(s) to a given point
 among the index geometries (which are approximations of the
-original geometries).
+real geometries).
 
 For input layers with geometry type point (or centroid
-approximation), a spatial index on the join layer will be used.
+approximation), a spatial index on the join layer will always be
+used.
 
-For join layers with geometry type other than point, the user can
-choose to do an inexact join based on the join layer index
-geometries to speed up the join by checking
-"Approximate by index geometries".
+For input layers with other geometry types than point, the
+*nearestNeighbor* function of *QgsSpatialIndex* can not be used.
+Therefore, the *QgsGeometry.distance* function is used to find the
+nearest neighbour in the join layer.
+Without the use of an index, the geometry of each feature of the
+input layer has to be compared to the geometries of all the
+features in the join layer.
+And this will take time for large datasets.
 
 For input layers with non-point geometry type, the user can specify
-that the geometry centroids are used for the join by checking
+that the geometry centroids are to be used for the join by checking
 "Approximate geometries by centroids".
 This means that the join will not be exact with respect to the
 original input layer geometries.
 
-When a spatial index on the join layer is available, the
-*QgsSpatialIndex.nearestNeighbor* function of the index is used to
-find the nearest neighbour for each input feature.
+For join layers with geometry type other than point, the user can
+choose to do an inexact join based on the join layer index geometries
+to speed up the join by checking "Approximate by index geometries".
 
-For input layers with other geometry types than point, the default
-is to use the *QgsGeometry.distance* function to find the distance
-between geometries.
-The feature of the join layer that has the shortest distance to the
-the geometry of the input feature is chosen as the nearest
-neighbour.
-This means that the geometry of each feature of the input layer has
-to be compared to the geometry of all the features in the join
-layer!
+Spatial index
+--------------
+
+When a spatial index can be applied, the
+*QgsSpatialIndex.nearestNeighbor* function of the join layer index is
+used to find the nearest neighbour for each input feature.
+
+- For join layers with point geometries, the index will give an exact
+  answer.
+
+- For join layers with non-point geometries the index will give an
+  approximate answer (based on the index geometries which are
+  approximations of the real geometries).
+  This approximate answer is then used to check all potential
+  neighbours using *QgsGeometry.distance*.
+
 
 .. table:: NNJoin geometry types, join options and index usage (non-multi geometry types)
 
-    +----------------------------------+------------------------------+--------------------+------------------------------+
-    | Layer (row: input; column: join) | Point                        | Non-point          | Non-point, index chosen      |
-    +==================================+==============================+====================+==============================+
-    | **Point**                        | Spatial index used           | Spatial index used | Spatial index used (inexact) |
-    +----------------------------------+------------------------------+--------------------+------------------------------+
-    | **Non-point**                    | No index                     | No index           | NA                           |
-    +----------------------------------+------------------------------+--------------------+------------------------------+
-    | **Non-point, approximate**       | Spatial index used (inexact) | No index           | Spatial index used (inexact) |
-    +----------------------------------+------------------------------+--------------------+------------------------------+
+    +----------------------------------+------------------------------+------------------------------+------------------------------+
+    | Layer (row: input; column: join) | Point                        | Non-point                    | Non-point, index approx.     |
+    +==================================+==============================+==============================+==============================+
+    | **Point**                        | Spatial index used           | Spatial index used           | Spatial index used (inexact) |
+    +----------------------------------+------------------------------+------------------------------+------------------------------+
+    | **Non-point**                    | No index                     | No index                     | NA                           |
+    +----------------------------------+------------------------------+------------------------------+------------------------------+
+    | **Non-point, approximate**       | Spatial index used (inexact) | Spatial index used (inexact) | Spatial index used (inexact) |
+    +----------------------------------+------------------------------+------------------------------+------------------------------+
+
+Coordinate Reference Systems (CRS)
+---------------------------------------
 
 If the input and join layers have different Coordinate Reference
 Systems (CRS), the input geometry is transformed to the join layer
@@ -160,17 +178,25 @@ the join layer CRS is not possible.
 **The join layer should have a projected CRS**.
 
 Versions
-----------------------------------
-
+===============
 The current version is 1.2.0
 
-Misc
-------
+- 1.2.0: Support for indexes on non-point join layers.
 
-QGIS Plugin page: NNJoinPlugin_
+- 1.1.0: Allow the user to choose centroids for the input geometries.
+         Stopped using approximate join layer geometries.
+         
+- 1.0.0: Threading
 
-Code repository: NNJoinRepository_
 
+Links
+=======
+
+NNJoin QGIS Plugin page: NNJoinPlugin_
+
+NNJoin code repository: NNJoinRepository_
+
+NNJoin issues / bug reporting: NNJoinIssues_
 
 Indices and tables
 ==================
@@ -182,3 +208,6 @@ Indices and tables
 
 .. _NNJoinRepository: https://github.com/havatv/qgisnnjoinplugin.git
 .. _NNJoinPlugin: https://plugins.qgis.org/plugins/NNJoin/
+.. _NNJoinIssues: https://github.com/havatv/qgisnnjoinplugin/issues
+
+.. |N2|: N\ :sup:`2`

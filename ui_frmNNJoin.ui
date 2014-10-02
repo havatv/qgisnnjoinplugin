@@ -48,7 +48,7 @@
         <number>2</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -67,11 +67,6 @@
          </item>
          <item>
           <widget class="QLabel" name="label_inputgeom">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-            </font>
-           </property>
            <property name="text">
             <string>Geometry type:</string>
            </property>
@@ -81,7 +76,6 @@
           <widget class="QLabel" name="inputgeometrytypelabel">
            <property name="font">
             <font>
-             <pointsize>8</pointsize>
              <italic>true</italic>
             </font>
            </property>
@@ -115,7 +109,7 @@
         <number>2</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -134,11 +128,6 @@
          </item>
          <item>
           <widget class="QLabel" name="label_2">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-            </font>
-           </property>
            <property name="text">
             <string>Geometry type:</string>
            </property>
@@ -148,7 +137,6 @@
           <widget class="QLabel" name="joingeometrytypelabel">
            <property name="font">
             <font>
-             <pointsize>8</pointsize>
              <italic>true</italic>
             </font>
            </property>
@@ -223,7 +211,7 @@
         <number>2</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <item>
         <widget class="QLineEdit" name="outputDataset">
