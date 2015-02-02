@@ -2,9 +2,9 @@
 """
 /***************************************************************************
  NN_Join_gui
-                                 A QGIS plugin
- Nearest neighbour spatial join
-                             -------------------
+                      GUI of the NNJoin plugin
+
+                      -------------------
         begin                : 2014-09-04
         git sha              : $Format:%H$
         copyright            : (C) 2014 by Håvard Tveite
@@ -23,14 +23,16 @@
 
 from os.path import dirname
 from os.path import join
-
 from PyQt4 import uic
-from PyQt4.QtCore import SIGNAL, QObject, QThread, Qt, QCoreApplication
-from PyQt4.QtGui import QDialog, QDialogButtonBox, QProgressBar, QPushButton
-
-from qgis.core import QgsMessageLog, QgsMapLayerRegistry
-from qgis.core import QGis, QgsVectorLayer, QgsMapLayer
+from PyQt4.QtCore import (SIGNAL, QObject, QThread, Qt,
+                          QCoreApplication, QUrl)
+from PyQt4.QtGui import (QDialog, QDialogButtonBox, QProgressBar,
+                         QPushButton, QDesktopServices)
+from qgis.core import (QgsMessageLog, QgsMapLayerRegistry, QGis,
+                       QgsMapLayer)
+#QgsVectorLayer
 from qgis.gui import QgsMessageBar
+#from qgis.utils import showPluginHelp
 
 from NNJoin_engine import Worker
 
@@ -42,18 +44,23 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def __init__(self, iface, parent=None):
         """Constructor."""
         self.iface = iface
+        self.plugin_dir = dirname(__file__)
+        # Some translated text (to enable reuse)
         self.NNJOIN = self.tr('NNJoin')
         self.CANCEL = self.tr('Cancel')
         self.CLOSE = self.tr('Close')
+        self.HELP = self.tr('Help')
         self.OK = self.tr('OK')
         super(NNJoinDialog, self).__init__(parent)
         # The following makes the plugin dialog window always stay
         # on top (above all other windows):
         #QDialog.__init__(self, None, Qt.WindowStaysOnTopHint)
+
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html#widgets-and-dialogs-with-auto-connect
+        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html#\
+        # widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         # Modify ui components
         okButton = self.button_box.button(QDialogButtonBox.Ok)
@@ -64,21 +71,38 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         closeButton.setText(self.CLOSE)
         self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
         self.approximate_input_geom_cb.setVisible(False)
-        self.use_index_cb.setCheckState(Qt.Unchecked)
-        self.use_index_cb.setVisible(False)
+        stytxt = "QCheckBox:checked {color: red; background-color: white}"
+        self.approximate_input_geom_cb.setStyleSheet(stytxt)
+        self.use_indexapprox_cb.setCheckState(Qt.Unchecked)
+        self.use_indexapprox_cb.setVisible(False)
+        self.use_indexapprox_cb.setStyleSheet(stytxt)
+        self.use_index_nonpoint_cb.setCheckState(Qt.Unchecked)
+        self.use_index_nonpoint_cb.setVisible(False)
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.button_box.button(QDialogButtonBox.Cancel).setEnabled(False)
+        # Help button
+        helpButton = self.helpButton
+        helpButton.setText(self.HELP)
 
         # Connect signals
         okButton.clicked.connect(self.startWorker)
         cancelButton.clicked.connect(self.killWorker)
         closeButton.clicked.connect(self.reject)
-        self.approximate_input_geom_cb.stateChanged['int'].connect(self.useindexchanged)
+        helpButton.clicked.connect(self.help)
+        self.approximate_input_geom_cb.stateChanged['int'].connect(
+            self.useindexchanged)
+        self.use_indexapprox_cb.stateChanged['int'].connect(
+            self.useindexchanged)
+        self.use_index_nonpoint_cb.stateChanged['int'].connect(
+            self.useindexchanged)
         inpIndexCh = self.inputVectorLayer.currentIndexChanged['QString']
         inpIndexCh.connect(self.layerchanged)
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
         joinIndexCh.connect(self.layerchanged)
-        self.iface.legendInterface().itemAdded.connect(self.layerlistchanged)
-        self.iface.legendInterface().itemRemoved.connect(self.layerlistchanged)
+        self.iface.legendInterface().itemAdded.connect(
+            self.layerlistchanged)
+        self.iface.legendInterface().itemRemoved.connect(
+            self.layerlistchanged)
         # pyuic4 uses old style connections, so the disconnect has
         # to be old style!
         # so does not work with pyuic4:
@@ -88,66 +112,76 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Set instance variables
         self.mem_layer = None
         self.worker = None
-        self.NNJOIN = self.tr('NNJoin')
         self.inputlayerid = None
         self.joinlayerid = None
         self.layerlistchanging = False
 
     def startWorker(self):
         """Initialises and starts the worker thread."""
-        layerindex = self.inputVectorLayer.currentIndex()
-        layerId = self.inputVectorLayer.itemData(layerindex)
-        inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
-        if inputlayer is None:
-            self.showError(self.tr('No input layer defined'))
-            return
-        joinindex = self.joinVectorLayer.currentIndex()
-        joinlayerId = self.joinVectorLayer.itemData(joinindex)
-        joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
-        if joinlayer is None:
-            self.showError(self.tr('No join layer defined'))
-            return
-        if joinlayer is not None and joinlayer.crs().geographicFlag():
-            self.showWarning('Geographic CRS used for the join layer -'
-                             ' distances will be in decimal degrees!')
-        outputlayername = self.outputDataset.text()
-        approximateinputgeom = self.approximate_input_geom_cb.isChecked()
-        joinprefix = self.joinPrefix.text()
-        useindex = self.use_index_cb.isChecked()
-        # create a new worker instance
-        worker = Worker(inputlayer, joinlayer, outputlayername,
-                        approximateinputgeom, joinprefix, useindex)
-        # configure the QgsMessageBar
-        msgBar = self.iface.messageBar().createMessage(self.tr('Joining'), '')
-        self.aprogressBar = QProgressBar()
-        self.aprogressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        acancelButton = QPushButton()
-        acancelButton.setText(self.CANCEL)
-        acancelButton.clicked.connect(self.killWorker)
-        msgBar.layout().addWidget(self.aprogressBar)
-        msgBar.layout().addWidget(acancelButton)
-        # Has to be popped after the thread has finished (in
-        # workerFinished).
-        self.iface.messageBar().pushWidget(msgBar,
-                                           self.iface.messageBar().INFO)
-        self.messageBar = msgBar
-        # start the worker in a new thread
-        thread = QThread(self)
-        worker.moveToThread(thread)
-        worker.finished.connect(self.workerFinished)
-        worker.error.connect(self.workerError)
-        worker.status.connect(self.workerInfo)
-        worker.progress.connect(self.progressBar.setValue)
-        worker.progress.connect(self.aprogressBar.setValue)
-        thread.started.connect(worker.run)
-        thread.start()
-        self.thread = thread
-        self.worker = worker
-        self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
-        self.button_box.button(QDialogButtonBox.Close).setEnabled(False)
-        if layerId == joinlayerId:
-            self.showInfo("The join layer is the same as the"
-                             " input layer - doing a self join!")
+        try:
+            layerindex = self.inputVectorLayer.currentIndex()
+            layerId = self.inputVectorLayer.itemData(layerindex)
+            inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+            if inputlayer is None:
+                self.showError(self.tr('No input layer defined'))
+                return
+            joinindex = self.joinVectorLayer.currentIndex()
+            joinlayerId = self.joinVectorLayer.itemData(joinindex)
+            joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+            if joinlayer is None:
+                self.showError(self.tr('No join layer defined'))
+                return
+            if joinlayer is not None and joinlayer.crs().geographicFlag():
+                self.showWarning('Geographic CRS used for the join layer -'
+                                 ' distances will be in decimal degrees!')
+            outputlayername = self.outputDataset.text()
+            approximateinputgeom = self.approximate_input_geom_cb.isChecked()
+            joinprefix = self.joinPrefix.text()
+            #useindex = True
+            useindex = self.use_index_nonpoint_cb.isChecked()
+            useindexapproximation = self.use_indexapprox_cb.isChecked()
+            # create a new worker instance
+            worker = Worker(inputlayer, joinlayer, outputlayername,
+                            approximateinputgeom, joinprefix,
+                            useindexapproximation, useindex)
+            # configure the QgsMessageBar
+            msgBar = self.iface.messageBar().createMessage(
+                                                self.tr('Joining'), '')
+            self.aprogressBar = QProgressBar()
+            self.aprogressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            acancelButton = QPushButton()
+            acancelButton.setText(self.CANCEL)
+            acancelButton.clicked.connect(self.killWorker)
+            msgBar.layout().addWidget(self.aprogressBar)
+            msgBar.layout().addWidget(acancelButton)
+            # Has to be popped after the thread has finished (in
+            # workerFinished).
+            self.iface.messageBar().pushWidget(msgBar,
+                                               self.iface.messageBar().INFO)
+            self.messageBar = msgBar
+            # start the worker in a new thread
+            thread = QThread(self)
+            worker.moveToThread(thread)
+            worker.finished.connect(self.workerFinished)
+            worker.error.connect(self.workerError)
+            worker.status.connect(self.workerInfo)
+            worker.progress.connect(self.progressBar.setValue)
+            worker.progress.connect(self.aprogressBar.setValue)
+            thread.started.connect(worker.run)
+            thread.start()
+            self.thread = thread
+            self.worker = worker
+            self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.button_box.button(QDialogButtonBox.Close).setEnabled(False)
+            self.button_box.button(QDialogButtonBox.Cancel).setEnabled(True)
+            if layerId == joinlayerId:
+                self.showInfo("The join layer is the same as the"
+                              " input layer - doing a self join!")
+        except:
+            import traceback
+            self.showError(traceback.format_exc())
+        else:
+            pass
 
     def workerFinished(self, ok, ret):
         """Handles the output from the worker and cleans up after the
@@ -178,12 +212,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.progressBar.setValue(0.0)
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         self.button_box.button(QDialogButtonBox.Close).setEnabled(True)
+        self.button_box.button(QDialogButtonBox.Cancel).setEnabled(False)
 
     def workerError(self, exception_string):
         """Report an error from the worker."""
-        #QgsMessageLog.logMessage(self.tr('Worker failed - exception') +
-        #                         ': ' + str(exception_string), self.NNJOIN,
-        #                         QgsMessageLog.CRITICAL)
         self.showError(exception_string)
 
     def workerInfo(self, message_string):
@@ -195,15 +227,15 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         """Do the necessary updates after a layer selection has
            been changed."""
         # If the layer list is being updated, don't do anything
-	if self.layerlistchanging:
-	    return
+        if self.layerlistchanging:
+            return
         layerindex = self.inputVectorLayer.currentIndex()
         layerId = self.inputVectorLayer.itemData(layerindex)
-	self.inputlayerid = layerId
+        self.inputlayerid = layerId
         inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
-	self.joinlayerid = joinlayerId
+        self.joinlayerid = joinlayerId
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
         # Update the UI label with input geometry type information
         if inputlayer is not None:
@@ -233,6 +265,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.updateui()
 
     def layerlistchanged(self):
+        # When a layer has been added to or removed by the user,
+        # the comboboxes should be updated to include the new
+        # possibilities.
         self.layerlistchanging = True
         # Repopulate the input and join layer combo boxes
         # Save the currently selected input layer
@@ -242,7 +277,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             if alayer.type() == QgsMapLayer.VectorLayer:
                 self.inputVectorLayer.addItem(alayer.name(), alayer.id())
         # Set the previous selection
-        for i in range (self.inputVectorLayer.count()):
+        for i in range(self.inputVectorLayer.count()):
             if self.inputVectorLayer.itemData(i) == inputlayerid:
                 self.inputVectorLayer.setCurrentIndex(i)
         # Save the currently selected join layer
@@ -252,7 +287,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             if alayer.type() == QgsMapLayer.VectorLayer:
                 self.joinVectorLayer.addItem(alayer.name(), alayer.id())
         # Set the previous selection
-        for i in range (self.joinVectorLayer.count()):
+        for i in range(self.joinVectorLayer.count()):
             if self.joinVectorLayer.itemData(i) == joinlayerid:
                 self.joinVectorLayer.setCurrentIndex(i)
         self.layerlistchanging = False
@@ -271,32 +306,77 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        # Check the geometry type of the input layer and set
+        # user interface options accordingly
         if inputlayer is not None:
-            geometryType = inputlayer.geometryType()
             wkbType = inputlayer.wkbType()
             joinwkbType = QGis.WKBUnknown
             if joinlayer is not None:
                 joinwkbType = joinlayer.wkbType()
-            feats = inputlayer.getFeatures()
             # If the input layer is not a point layer, allow choosing
             # approximate geometry (centroid)
             if wkbType == QGis.WKBPoint or wkbType == QGis.WKBPoint25D:
+                # Input layer is a simple point layer and can not
+                # be approximated
+                self.approximate_input_geom_cb.blockSignals(True)
                 self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
                 self.approximate_input_geom_cb.setVisible(False)
+                self.approximate_input_geom_cb.blockSignals(False)
             else:
+                # Input layer is not a point layer, so approximation
+                # is possible
+                self.approximate_input_geom_cb.blockSignals(True)
                 self.approximate_input_geom_cb.setVisible(True)
-            # Update the use index checkbox:
-            if ((wkbType == QGis.WKBPoint or wkbType == QGis.WKBPoint25D or
-                    self.approximate_input_geom_cb.isChecked()) and
-                    not (joinwkbType == QGis.WKBPoint or
-                    joinwkbType == QGis.WKBPoint25D)):
-                self.use_index_cb.setVisible(True)
+                self.approximate_input_geom_cb.blockSignals(False)
+            # Update the use index checkbox
+            if ((wkbType == QGis.WKBLineString or
+                    wkbType == QGis.WKBLineString25D or
+                    wkbType == QGis.WKBPolygon or
+                    wkbType == QGis.WKBPolygon25D) and
+                    not self.approximate_input_geom_cb.isChecked()):
+                # The input layer is a line or polygong layer that
+                # is not approximated, so the user is allowed to
+                # choose not to use the spatial index (not very useful!)
+                if not self.use_index_nonpoint_cb.isVisible():
+                    self.use_index_nonpoint_cb.blockSignals(True)
+                    self.use_index_nonpoint_cb.setCheckState(Qt.Checked)
+                    self.use_index_nonpoint_cb.setVisible(True)
+                    self.use_index_nonpoint_cb.blockSignals(False)
             else:
-                self.use_index_cb.setCheckState(Qt.Unchecked)
-                self.use_index_cb.setVisible(False)
+                # The input layer is either a point approximation
+                # or it is a point layer (or some kind of
+                # multigeometry!), anyway we won't allow the user to
+                # choose not to use a spatial index
+                self.use_index_nonpoint_cb.blockSignals(True)
+                self.use_index_nonpoint_cb.setCheckState(Qt.Unchecked)
+                self.use_index_nonpoint_cb.setVisible(False)
+                self.use_index_nonpoint_cb.blockSignals(False)
+            # Update the use index approximation checkbox:
+            if ((wkbType == QGis.WKBPoint or
+                 wkbType == QGis.WKBPoint25D or
+                 self.approximate_input_geom_cb.isChecked())
+                and not (joinwkbType == QGis.WKBPoint or
+                         joinwkbType == QGis.WKBPoint25D)):
+                # For non-point join layers and point input layers,
+                # the user is allowed to choose an approximation (the
+                # index geometry) to be used for the join geometry in
+                # the join.
+                self.use_indexapprox_cb.setVisible(True)
+            else:
+                # For point join layers, and non-point,
+                # non-point-approximated input layers, the user is
+                # not allowed to choose an approximation (the index
+                # geometry) to be used for the join geometry in the
+                # join.
+                self.use_indexapprox_cb.blockSignals(True)
+                self.use_indexapprox_cb.setCheckState(Qt.Unchecked)
+                self.use_indexapprox_cb.setVisible(False)
+                self.use_indexapprox_cb.blockSignals(False)
         else:
+            # No input layer defined, so options are disabled
             self.approximate_input_geom_cb.setVisible(False)
-            self.use_index_cb.setVisible(False)
+            self.use_indexapprox_cb.setVisible(False)
+            self.use_index_nonpoint_cb.setVisible(False)
 
     def getwkbtext(self, number):
         if number == QGis.WKBUnknown:
@@ -307,13 +387,13 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             return "LineString"
         elif number == QGis.WKBPolygon:
             return "Polygon"
-        elif number == QGis.WKBMultiPoint :
+        elif number == QGis.WKBMultiPoint:
             return "MultiPoint"
-        elif number == QGis.WKBMultiLineString :
+        elif number == QGis.WKBMultiLineString:
             return "MultiLineString"
-        elif number == QGis.WKBMultiPolygon :
+        elif number == QGis.WKBMultiPolygon:
             return "MultiPolygon"
-        elif number == QGis.WKBNoGeometry :
+        elif number == QGis.WKBNoGeometry:
             return "NoGeometry"
         elif number == QGis.WKBPoint25D:
             return "Point25D"
@@ -328,6 +408,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         elif number == QGis.WKBMultiPolygon25D:
             return "MultiPolygon25D"
         else:
+            showError('Unknown or invalid geometry type: ' + str(number))
             return "Don't know"
 
     def killWorker(self):
@@ -360,6 +441,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                             duration=2)
         QgsMessageLog.logMessage('Info: ' + text, self.NNJOIN,
                                  QgsMessageLog.INFO)
+
+    def help(self):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(
+                         self.plugin_dir + "/help/index.html"))
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.

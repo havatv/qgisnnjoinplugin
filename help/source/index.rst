@@ -31,15 +31,25 @@ Functionality
   supported, as long as the join layer coordinate system is a
   projected CRS.
 
-  A warning is given when the user attempts to join layers with
-  different CRS.
+  - A warning is given when the user attempts to join layers with
+    different CRS.
   
-  The join and distance calculations is performed using the join
-  layer CRS.
+  - The join and distance calculations is performed using the join
+    layer CRS.
+
+  - Joining layers with an unprojected CRS is allowed, but the
+    distance calculations are then done using decimal degreees, and
+    the distances returned will be in decimal degrees.
+
+  - The join will fail if the transformation of an input feature
+    geometry to the join layer CRS fails.
 
 - Self joins are supported.
   For self joins, each feature in the layer is joined to its nearest
   neighbour within the layer.
+
+- A spatial index (QgsSpatialIndex) on the join layer is used to
+  speed up the join for layers with non-multi-geometry types.
 
 The result layer
 =================
@@ -48,7 +58,7 @@ The result layer will contain all the attributes of both
 the *input* and *join* layers plus a new attribute
 "distance" that contains the distance between the joined features.
 The attributes from the *join* layer will get a prefix
-(the default "join\_", but this can be set by the user).
+(the default is "join\_", but this can be set by the user).
 If a join prefix is not used, attributes from the join layer that
 have the same name as attributes in the input layer will not be
 included in the output layer.
@@ -64,18 +74,23 @@ Options
   geometries of the spatial index for the join layer.
   The results will not be exact, but the speed should increase.
 
-- The user can choose the prefix of the join layer attributes in the
+- The user can choose not to use a spatial index on the join layer
+  for non-point input layers.
+
+- The user can specify the prefix of the join layer attributes in the
   output layer.
 
-- The user can choose the name of the result layer.
+- The user can specify the name of the result layer.
 
 Performance
 ===============
 
 Below is a table that cross tabulates *input layer* (rows) and
 *join* layer (column) geometry types, and indicates the usefulness
-of the plugin (**OK** - the operation is O(NlogM) / O(NlogN), or
-**Slow** - the operation is O(NM) / O(|N2|).
+of the plugin (**OK** - the operation has time complexity O(*N*\ log\ *M*\ ) /
+O(*N*\ log\ *N*\ ), or **Slow** - the operation has time complexity O(*NM*\ ) /
+O(*N*\ :sup:`2`), where *N* is the size of the input layer and *M* is the size
+of the join layer).
 
 .. table:: Efficiency of NNJoin for simple geometries
 
@@ -84,14 +99,14 @@ of the plugin (**OK** - the operation is O(NlogM) / O(NlogN), or
     +==================================+=======+=======+=========+
     | **Point**                        | OK    | OK    | OK      |
     +----------------------------------+-------+-------+---------+
-    | **Line**                         | Slow  | Slow  | Slow    |
+    | **Line**                         | OK    | OK    | OK      |
     +----------------------------------+-------+-------+---------+
-    | **Polygon**                      | Slow  | Slow  | Slow    |
+    | **Polygon**                      | OK    | OK    | OK      |
     +----------------------------------+-------+-------+---------+
 
-Multi geometries:
+Multi-geometries:
 
-.. table:: Efficiency of NNJoin for multigeometries
+.. table:: Efficiency of NNJoin for multi-geometries
 
     +----------------------------------+------------+------------+--------------+
     | Layer (row: input; column: join) | MultiPoint | MultiLine  | MultiPolygon |
@@ -109,6 +124,11 @@ Implementation
 Looping through the features of the *input* layer, the nearest
 neighbour to each feature is identified in the *join* layer.
 
+Without the use of an index, the geometry of each feature of the
+input layer has to be compared to the geometries of all the
+features in the join layer.
+This takes a lot of time for large datasets.
+
 A spatial index on the join layer will normally speed up the join.
 *QgsSpatialIndex* provides the *nearestNeighbor* function, and
 this function returns the nearest neighbour(s) to a given point
@@ -119,14 +139,11 @@ For input layers with geometry type point (or centroid
 approximation), a spatial index on the join layer will always be
 used.
 
-For input layers with other geometry types than point, the
-*nearestNeighbor* function of *QgsSpatialIndex* can not be used.
-Therefore, the *QgsGeometry.distance* function is used to find the
-nearest neighbour in the join layer.
-Without the use of an index, the geometry of each feature of the
-input layer has to be compared to the geometries of all the
-features in the join layer.
-And this will take time for large datasets.
+The *nearestNeighbor* function of *QgsSpatialIndex* only works on
+points.  By approximating non-point input layer geometries by their
+centroid, the spatial index can be used to speed up the join.
+
+For layers with multi-geometries, spatial indexes are not used.
 
 For input layers with non-point geometry type, the user can specify
 that the geometry centroids are to be used for the join by checking
@@ -135,8 +152,9 @@ This means that the join will not be exact with respect to the
 original input layer geometries.
 
 For join layers with geometry type other than point, the user can
-choose to do an inexact join based on the join layer index geometries
-to speed up the join by checking "Approximate by index geometries".
+choose to do an inexact join based on the join layer index
+geometries to speed up the join by checking "Approximate by index
+geometries".
 
 Spatial index
 --------------
@@ -151,21 +169,30 @@ used to find the nearest neighbour for each input feature.
 - For join layers with non-point geometries the index will give an
   approximate answer (based on the index geometries which are
   approximations of the real geometries).
-  This approximate answer is then used to check all potential
-  neighbours using *QgsGeometry.distance*.
+  This approximate answer is used to find all potential neighbours
+  using the *intersects* function of *QgsSpatialIndex*, and among
+  them the nearest neighbour is found using *QgsGeometry.distance*.
+
+- For input layers with non-point geometries, the index is used to
+  find a possible nearest neighbour based on the centroid of the
+  input geometry.  The geometry of this possible nearest neighbour is
+  then used in combination with the input geometry to determine a
+  search region.  The search region is used to find all potential
+  nearest neighbours and then find the closest one using
+  *QgsGeometry.distance*.
 
 
-.. table:: NNJoin geometry types, join options and index usage (non-multi geometry types)
+.. table:: NNJoin geometry types, join options and index usage (non-multi-geometry types)
 
-    +----------------------------------+------------------------------+------------------------------+------------------------------+
-    | Layer (row: input; column: join) | Point                        | Non-point                    | Non-point, index approx.     |
-    +==================================+==============================+==============================+==============================+
-    | **Point**                        | Spatial index used           | Spatial index used           | Spatial index used (inexact) |
-    +----------------------------------+------------------------------+------------------------------+------------------------------+
-    | **Non-point**                    | No index                     | No index                     | NA                           |
-    +----------------------------------+------------------------------+------------------------------+------------------------------+
-    | **Non-point, approximate**       | Spatial index used (inexact) | Spatial index used (inexact) | Spatial index used (inexact) |
-    +----------------------------------+------------------------------+------------------------------+------------------------------+
+    +----------------------------------+---------------------------------+-------------------------------+------------------------------+
+    | Layer (row: input; column: join) | Point                           | Non-point                     | Non-point, index approx.     |
+    +==================================+=================================+===============================+==============================+
+    | **Point**                        | Spatial index used              | Spatial index used            | Spatial index used (inexact) |
+    +----------------------------------+---------------------------------+-------------------------------+------------------------------+
+    | **Non-point**                    | Spatial index used   (optional) | Spatial index used (optional) | NA                           |
+    +----------------------------------+---------------------------------+-------------------------------+------------------------------+
+    | **Non-point, approximate**       | Spatial index used              | Spatial index used            | Spatial index used (inexact) |
+    +----------------------------------+---------------------------------+-------------------------------+------------------------------+
 
 Coordinate Reference Systems (CRS)
 ---------------------------------------
@@ -181,7 +208,10 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 1.2.0
+The current version is 1.2.1
+
+- 1.2.1: Support for index usage for all non-point input layers
+         except multi-geometry layers.
 
 - 1.2.0: Support for indexes on non-point join layers.
 

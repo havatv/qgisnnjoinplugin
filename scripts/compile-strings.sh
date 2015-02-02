@@ -1,10 +1,12 @@
 #!/bin/bash
-LOCALES=$*
+LRELEASE=$1
+LOCALES=$2
+PLUGIN_PREFIX=NNJoin_
 
 for LOCALE in ${LOCALES}
 do
-    echo "NNJoin/i18n/NNJoin_"${LOCALE}".ts"
+    echo "Processing: ${LOCALE}.ts"
     # Note we don't use pylupdate with qt .pro file approach as it is flakey
     # about what is made available.
-    lrelease-qt4 i18n/NNJoin_${LOCALE}.ts
+    $LRELEASE i18n/${PLUGIN_PREFIX}${LOCALE}.ts
 done

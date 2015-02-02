@@ -24,10 +24,19 @@
 
 
 #Add iso code for any locales you want to support here (space separated)
-LOCALES = nn nb
+# default is no locales
+LOCALES = "nn nb"
+
+# If locales are enabled, set the name of the lrelease binary on your system. If
+# you have trouble compiling the translations, you may have to specify the full path to
+# lrelease
+LRELEASE = lrelease
+#LRELEASE = lrelease-qt4
+
 
 # translation
 SOURCES = \
+	__init__.py \
     NNJoin_plugin.py \
     NNJoin_gui.py \
     NNJoin_engine.py
@@ -40,9 +49,13 @@ PY_FILES = \
     NNJoin_gui.py \
     NNJoin_engine.py
 
+UI_FILES = ui_frmNNJoin.ui
+
 EXTRAS = nnjoin.png metadata.txt
 
-COMPILED_RESOURCE_FILES = resources.py
+COMPILED_RESOURCE_FILES = resources_rc.py
+
+PEP8EXCLUDE=pydev,resources_rc.py,conf.py,third_party,ui
 
 
 #################################################
@@ -53,22 +66,19 @@ HELP = help/build/html
 
 PLUGIN_UPLOAD = $(c)/plugin_upload.py
 
-QGISDIR=.qgis2
+RESOURCE_SRC=$(shell grep '^ *<file' resources.qrc | sed 's@</file>@@g;s/.*>//g' | tr '\n' ' ')
 
-### translation
-###TRANSLATIONS = i18n/nnjoin_en.ts
-##TRANSLATIONS = i18n/nnjoin_nb.ts i18n/nnjoin_nn.ts
-UI_FILES = ui_frmNNJoin.ui
+QGISDIR=.qgis2
 
 default: compile
 
 compile: $(COMPILED_RESOURCE_FILES)
 
-%_rc.py : %.qrc
+%_rc.py : %.qrc $(RESOURCES_SRC)
 	pyrcc4 -o $*_rc.py  $<
 
 %.qm : %.ts
-	lrelease $<
+	$(LRELEASE) $<
 
 test: compile transcompile
 	@echo
@@ -98,23 +108,22 @@ deploy: compile doc transcompile
 	# $HOME/$(QGISDIR)/python/plugins
 	mkdir -p $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	#cp -vf $(COMPILED_UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
-	###cp -vf $(UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
 # The dclean target removes compiled python files from plugin directory
-# also deletes any .svn entry
+# also deletes any .git entry
 dclean:
 	@echo
 	@echo "-----------------------------------"
 	@echo "Removing any compiled python files."
 	@echo "-----------------------------------"
 	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname "*.pyc" -delete
-	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname ".svn" -prune -exec rm -Rf {} \;
+	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname ".git" -prune -exec rm -Rf {} \;
+
 
 derase:
 	@echo
@@ -159,7 +168,7 @@ transup:
 	@echo "------------------------------------------------"
 	@echo "Updating translation files with any new strings."
 	@echo "------------------------------------------------"
-	@chmod +x scripts/update-strings.sh
+	#@chmod +x scripts/update-strings.sh
 	@scripts/update-strings.sh $(LOCALES)
 
 transcompile:
@@ -167,8 +176,8 @@ transcompile:
 	@echo "----------------------------------------"
 	@echo "Compiled translation files to .qm files."
 	@echo "----------------------------------------"
-	@chmod +x scripts/compile-strings.sh
-	@scripts/compile-strings.sh $(LOCALES)
+	#@chmod +x scripts/compile-strings.sh
+	@scripts/compile-strings.sh $(LRELEASE) $(LOCALES)
 
 transclean:
 	@echo
@@ -183,7 +192,6 @@ clean:
 	@echo "Removing uic and rcc generated files"
 	@echo "------------------------------------"
 	rm $(COMPILED_UI_FILES) $(COMPILED_RESOURCE_FILES)
-	###rm $(UI_FILES)
 
 doc:
 	@echo
@@ -205,6 +213,7 @@ pylint:
 	@echo "e.g. source run-env-linux.sh <path to qgis install>; make pylint"
 	@echo "----------------------"
 
+
 # Run pep8 style checking
 #http://pypi.python.org/pypi/pep8
 pep8:
@@ -212,12 +221,7 @@ pep8:
 	@echo "-----------"
 	@echo "PEP8 issues"
 	@echo "-----------"
-	@pep8 --repeat --ignore=E203,E121,E122,E123,E124,E125,E126,E127,E128 --exclude pydev,resources_rc.py,conf.py . || true
-
-
-
-
-
-
-
-
+	@pep8 --repeat --ignore=E203,E121,E122,E123,E124,E125,E126,E127,E128 --exclude $(PEP8EXCLUDE) . || true
+	@echo "-----------"
+	@echo "Ignored in PEP8 check:"
+	@echo $(PEP8EXCLUDE)

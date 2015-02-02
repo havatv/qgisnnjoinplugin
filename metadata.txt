@@ -1,18 +1,18 @@
 # This file contains metadata for your plugin. Beginning
-# with version 1.8 this is the preferred way to supply information about a
-# plugin. The current method of embedding metadata in __init__.py will
-# be supported until version 2.0
+# with version 2.0 of QGIS this is the proper way to supply 
+# information about a plugin. The old method of 
+# embedding metadata in __init__.py will 
+# is no longer supported since version 2.0.
 
 # This file should be included when you package your plugin.
 
 # Mandatory items:
 
-
 [general]
 name=NNJoin
 qgisMinimumVersion=2.0
 description=Nearest neighbour join.  Join vector layers based on nearest neighbour relationships.
-version=1.2.0
+version=1.2.1
 author=Håvard Tveite, NMBU
 email=havard.tveite@nmbu.no
 
@@ -22,13 +22,13 @@ email=havard.tveite@nmbu.no
 
 # Uncomment the following line and add your changelog entries:
 changelog=0.0.1
-    - Modified from points2one
+    - Initial version
     0.1.0
     - Added functionality for joining vector layers based on neighbour relationships.
     0.2.0
     - Added support for all vector layer types
     0.2.1
-    - Fixed som translation issues
+    - Fixed some translation issues
     1.0.0
     - Threading
     - Spatial index for input point layers
@@ -36,7 +36,6 @@ changelog=0.0.1
     1.0.1
     - Fixed the progressbar in the QGIS messagebar
     1.0.2
-    - Code formatting
     - Removed plugin from the vector plugin toolbar
     - Added datasets for testing the plugin
     1.0.3
@@ -45,12 +44,15 @@ changelog=0.0.1
     - Fix bug where the nearest neighbours were found using the approximate geometries of the join layer index
     - Let the user choose simplified input geometries (centroids) to speed up the join with a spatial index
     - User interface update
-    - Code cleanup
     1.2.0
-    - Join layer index used for join layers with geometry type linestring and polygon
+    - Join layer spatial index used for join layers with geometry type linestring and polygon
+    1.2.1
+    - Apply join layer spatial index for non-point input layers
+    - Optimised memory layer addfeatures
     
-# tags are comma separated with spaces allowed
-tags=join,distance,nearest,neighbour,neighbor,spatial join,closest,vector layer,vector
+category=Analysis
+# Tags are comma separated with spaces allowed
+tags=join,distance,nearest,neighbour,neighbor,spatial join,closest,vector layer,vector,analysis
 
 homepage=http://hub.qgis.org/projects/nnjoin
 #http://arken.umb.no/~havatv/gis/qgisplugins/NNJoin

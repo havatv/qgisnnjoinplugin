@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>473</width>
-    <height>331</height>
+    <width>564</width>
+    <height>342</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,8 +24,8 @@
     <rect>
      <x>13</x>
      <y>10</y>
-     <width>451</width>
-     <height>311</height>
+     <width>541</width>
+     <height>301</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -87,14 +87,31 @@
         </layout>
        </item>
        <item>
-        <widget class="QCheckBox" name="approximate_input_geom_cb">
-         <property name="toolTip">
-          <string>Use approximate input geometries.&lt;br&gt;This will enable the use of a spatial index - could speed up the join considerably.</string>
-         </property>
-         <property name="text">
-          <string>Approximate geometries by centroids</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QCheckBox" name="approximate_input_geom_cb">
+           <property name="toolTip">
+            <string>Use approximate input geometries.&lt;br&gt;The result will also be approximate.&lt;br&gt;Could speed up the join considerably.</string>
+           </property>
+           <property name="text">
+            <string>Approximate geometries by centroids</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -150,12 +167,22 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QCheckBox" name="use_index_cb">
+          <widget class="QCheckBox" name="use_indexapprox_cb">
            <property name="toolTip">
-            <string>Uses an approximation of the geometry (bounding box) for the join</string>
+            <string>Uses an approximation of the geometry (bounding box) for the join.&lt;br/&gt;The result will also be approximate.</string>
            </property>
            <property name="text">
-            <string>Approximate by index geometries</string>
+            <string>Approximate geometries</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="use_index_nonpoint_cb">
+           <property name="toolTip">
+            <string>Use an index to speed up the join</string>
+           </property>
+           <property name="text">
+            <string>Use index</string>
            </property>
           </widget>
          </item>
@@ -163,6 +190,9 @@
           <spacer name="horizontalSpacer">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -279,6 +309,16 @@
         </property>
         <property name="standardButtons">
          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="helpButton">
+        <property name="toolTip">
+         <string>Get some help</string>
+        </property>
+        <property name="text">
+         <string>Help</string>
         </property>
        </widget>
       </item>

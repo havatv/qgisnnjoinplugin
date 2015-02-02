@@ -21,15 +21,16 @@
  ***************************************************************************/
 """
 import os.path
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from PyQt4.QtCore import (QSettings, QTranslator, qVersion,
+                          QCoreApplication)
 from PyQt4.QtGui import QAction, QIcon
 
 # QGIS imports
-from qgis.core import QgsMessageLog, QgsMapLayer
-import processing
+from qgis.core import QgsMapLayer
+#import processing
 
 # Plugin imports
-import resources
+import resources_rc
 from NNJoin_gui import NNJoinDialog
 
 
@@ -68,9 +69,8 @@ class NNJoin(object):
         self.NNJOINAMP = self.tr('&NNJoin')
         self.menu = self.NNJOIN
         self.toolbar = None
-        #self.toolbar = self.iface.addToolBar(u'NNJoin')
+        # Separate toolbar for NNJoin:
         #self.toolbar = self.iface.addToolBar(self.NNJOIN)
-        #self.toolbar.setObjectName(u'NNJoin')
         #self.toolbar.setObjectName(self.NNJOIN)
 
         # noinspection PyMethodMayBeStatic
@@ -88,17 +88,16 @@ class NNJoin(object):
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('NNJoin', message)
 
-    def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+    def add_action(self,
+                   icon_path,
+                   text,
+                   callback,
+                   enabled_flag=True,
+                   add_to_menu=True,
+                   add_to_toolbar=True,
+                   status_tip=None,
+                   whats_this=None,
+                   parent=None):
         """Add a toolbar icon to the InaSAFE toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -157,18 +156,20 @@ class NNJoin(object):
                 self.menu,
                 action)
 
+        # Add the plugin to the plugins toolbar of QGIS
         self.iface.addToolBarIcon(action)
+        # Add the plugin to the vector toolbar of QGIS
         #self.iface.addVectorToolBarIcon(action)
+        # Add the plugin to the vector menu of QGIS
         self.iface.addPluginToVectorMenu(self.tr(self.NNJOINAMP), action)
         self.actions.append(action)
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
         icon_path = ':/plugins/NNJoin/nnjoin.png'
         self.add_action(
             icon_path,
-            text=self.tr(self.NNJOIN),
+            text=self.NNJOIN,
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -181,7 +182,7 @@ class NNJoin(object):
             #if self.toolbar != None:
             #    self.iface.removeToolBarIcon(action)
             self.iface.removePluginVectorMenu(self.NNJOINAMP, action)
-            self.iface.removeVectorToolBarIcon(action)
+            #self.iface.removeVectorToolBarIcon(action)
             self.iface.removeToolBarIcon(action)
 
     def run(self):

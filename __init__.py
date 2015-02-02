@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- CoordinateScaling
+ NNJoin - __init__.py
                                  A QGIS plugin
- Scales the coordinates of a vector layer by a given factor
+
                              -------------------
         begin                : 2014-09-04
         copyright            : (C) 2014 by Håvard Tveite
@@ -25,11 +25,10 @@
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Load CoordinateScaling class from file CoordinateScaling.
-
+    """Return the NNJoin class from file NNJoin_plugin.
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    #
-    from NNJoin_plugin import NNJoin
+    # Load the NNJoin class from file NNJoin_plugin.
+    from .NNJoin_plugin import NNJoin
     return NNJoin(iface)
