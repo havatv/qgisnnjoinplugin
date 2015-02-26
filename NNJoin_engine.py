@@ -21,8 +21,6 @@
  ***************************************************************************/
 """
 
-from PyQt4 import QtCore
-from PyQt4.QtCore import QCoreApplication, QVariant
 #from qgis.core import *
 from qgis.core import QgsMessageLog, QgsMapLayerRegistry, QGis
 from qgis.core import QgsVectorLayer, QgsFeature, QgsSpatialIndex
@@ -30,6 +28,8 @@ from qgis.core import QgsFeatureRequest, QgsField, QgsGeometry
 from qgis.core import QgsRectangle, QgsCoordinateTransform
 #from processing import *
 
+from PyQt4 import QtCore
+from PyQt4.QtCore import QCoreApplication, QVariant
 
 class Worker(QtCore.QObject):
     '''The worker that does the heavy lifting.

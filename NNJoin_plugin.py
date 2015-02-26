@@ -21,13 +21,14 @@
  ***************************************************************************/
 """
 import os.path
-from PyQt4.QtCore import (QSettings, QTranslator, qVersion,
-                          QCoreApplication)
-from PyQt4.QtGui import QAction, QIcon
 
 # QGIS imports
 from qgis.core import QgsMapLayer
 #import processing
+
+from PyQt4.QtCore import (QSettings, QTranslator, qVersion,
+                          QCoreApplication)
+from PyQt4.QtGui import QAction, QIcon
 
 # Plugin imports
 import resources_rc

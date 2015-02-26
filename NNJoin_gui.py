@@ -23,16 +23,18 @@
 
 from os.path import dirname
 from os.path import join
-from PyQt4 import uic
-from PyQt4.QtCore import (SIGNAL, QObject, QThread, Qt,
-                          QCoreApplication, QUrl)
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QProgressBar,
-                         QPushButton, QDesktopServices)
+
 from qgis.core import (QgsMessageLog, QgsMapLayerRegistry, QGis,
                        QgsMapLayer)
 #QgsVectorLayer
 from qgis.gui import QgsMessageBar
 #from qgis.utils import showPluginHelp
+
+from PyQt4 import uic
+from PyQt4.QtCore import (SIGNAL, QObject, QThread, Qt,
+                          QCoreApplication, QUrl)
+from PyQt4.QtGui import (QDialog, QDialogButtonBox, QProgressBar,
+                         QPushButton, QDesktopServices)
 
 from NNJoin_engine import Worker
 
