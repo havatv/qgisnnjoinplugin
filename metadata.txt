@@ -12,7 +12,7 @@
 name=NNJoin
 qgisMinimumVersion=2.0
 description=Nearest neighbour join.  Join vector layers based on nearest neighbour relationships.
-version=1.2.1
+version=1.2.2
 author=Håvard Tveite, NMBU
 email=havard.tveite@nmbu.no
 
@@ -49,6 +49,8 @@ changelog=0.0.1
     1.2.1
     - Apply join layer spatial index for non-point input layers
     - Optimised memory layer addfeatures
+    1.2.2
+    - Fixed a strange crash issue, avoid crash for self join of single feature layers, and tried to improve the robustness of the plugin
     
 category=Analysis
 # Tags are comma separated with spaces allowed

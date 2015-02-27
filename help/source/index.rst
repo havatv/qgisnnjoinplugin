@@ -208,7 +208,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 1.2.1
+The current version is 1.2.2
+
+- 1.2.2: Fixed a strange crash issue
+         Avoid crash for self join of single feature layers
+         Attempts to improve the robustness of the plugin
 
 - 1.2.1: Support for index usage for all non-point input layers
          except multi-geometry layers.
