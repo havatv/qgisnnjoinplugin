@@ -135,9 +135,14 @@ class Worker(QtCore.QObject):
 
     def run(self):
         try:
+            if self.inpvl is None or self.joinvl is None:
+                self.status.emit('Layer is missing!')
+                self.finished.emit(False, None)
+                return
             #self.status.emit('Started!')
             # Check the geometry type and prepare the output layer
             geometryType = self.inpvl.geometryType()
+            #self.status.emit('Input layer geometry type: ' + str(geometryType))
             geometrytypetext = 'Point'
             if geometryType == QGis.Point:
                 geometrytypetext = 'Point'
@@ -145,28 +150,58 @@ class Worker(QtCore.QObject):
                 geometrytypetext = 'LineString'
             elif geometryType == QGis.Polygon:
                 geometrytypetext = 'Polygon'
-            # Does the input vector contain multi-geometries
+            # Does the input vector contain multi-geometries?
+            # Try to check the first feature
+            # This is not used for anything yet
             self.inputmulti = False
             feats = self.inpvl.getFeatures()
-            if feats.next().geometry().isMultipart():
-                self.inputmulti = True
-                geometrytypetext = 'Multi' + geometrytypetext
-            feats.rewind()
-            feats.close()
+            if feats is not None:
+                #self.status.emit('#Input features: ' + str(feats))
+                testfeature = feats.next()
+                feats.rewind()
+                feats.close()
+                if testfeature is not None:
+                    #self.status.emit('Input feature geometry: ' +
+                    #                 str(testfeature.geometry()))
+                    if testfeature.geometry() is not None:
+                        if testfeature.geometry().isMultipart():
+                            self.inputmulti = True
+                            geometrytypetext = 'Multi' + geometrytypetext
+                        else:
+                            pass
+                    else:
+                        self.status.emit('No geometry!')
+                        self.finished.emit(False, None)
+                        return
+                else:
+                    self.status.emit('No input features!')
+                    self.finished.emit(False, None)
+                    return
+            else:
+                self.status.emit('getFeatures returns None for input layer!')
+                self.finished.emit(False, None)
+                return
             geomptext = geometrytypetext
             # Set the coordinate reference system to the input
             # layer's CRS
-            if self.inpvl.dataProvider().crs() is not None:
+            if self.inpvl.crs() is not None:
                 geomptext = (geomptext + "?crs=" +
-                             str(self.inpvl.dataProvider().crs().authid()))
-            # Create a memory layer
+                             str(self.inpvl.crs().authid()))
             outfields = self.inpvl.pendingFields().toList()
-            jfields = self.joinvl.pendingFields().toList()
-            for joinfield in jfields:
-                outfields.append(QgsField(self.joinprefix +
-                                 str(joinfield.name()),
-                                 joinfield.type()))
+            #
+            if self.joinvl.pendingFields() is not None:
+                jfields = self.joinvl.pendingFields().toList()
+                for joinfield in jfields:
+                    outfields.append(QgsField(self.joinprefix +
+                                     str(joinfield.name()),
+                                     joinfield.type()))
+            else:
+                self.status.emit('Unable to get any join layer fields')
+                #self.finished.emit(False, None)
+                #return
+
             outfields.append(QgsField("distance", QVariant.Double))
+            # Create a memory layer
             self.mem_joinl = QgsVectorLayer(geomptext,
                                             self.outputlayername,
                                             "memory")
@@ -192,13 +227,32 @@ class Worker(QtCore.QObject):
                         break
                     self.joinlind.insertFeature(feat)
                 self.status.emit('Join layer index created!')
-            # Does the join layer contain multi geometries
+            # Does the join layer contain multi geometries?
+            # Try to check the first feature
+            # This is not used for anything yet
             self.joinmulti = False
             feats = self.joinvl.getFeatures()
-            if feats.next().geometry().isMultipart():
-                self.joinmulti = True
-            feats.rewind()
-            feats.close()
+            if feats is not None:
+                testfeature = feats.next()
+                feats.rewind()
+                feats.close()
+                if testfeature is not None:
+                    if testfeature.geometry() is not None:
+                        if testfeature.geometry().isMultipart():
+                            self.joinmulti = True
+                    else:
+                        self.status.emit('No join geometry!')
+                        self.finished.emit(False, None)
+                        return
+                else:
+                    self.status.emit('No join features!')
+                    self.finished.emit(False, None)
+                    return
+
+            #if feats.next().geometry().isMultipart():
+            #    self.joinmulti = True
+            #feats.rewind()
+            #feats.close()
 
             # Prepare for the join by fetching the layers into memory
             # Add the input features to a list
@@ -212,6 +266,7 @@ class Worker(QtCore.QObject):
             for f in joinfeatures:
                 self.joinf.append(f)
             self.features = []
+
             # Do the join!
             # Using the original features from the input layer
             for feat in self.inputf:
@@ -266,12 +321,10 @@ class Worker(QtCore.QObject):
             inputgeom = QgsGeometry(infeature.geometry()).centroid()
         # Check if the coordinate systems are equal, if not,
         # transform the input feature!
-        if (self.inpvl.dataProvider().crs() !=
-                self.joinvl.dataProvider().crs()):
+        if (self.inpvl.crs() != self.joinvl.crs()):
             try:
                 inputgeom.transform(QgsCoordinateTransform(
-                    self.inpvl.dataProvider().crs(),
-                    self.joinvl.dataProvider().crs()))
+                    self.inpvl.crs(), self.joinvl.crs()))
             except:
                 import traceback
                 self.error.emit(self.tr('CRS Transformation error!') +
@@ -299,7 +352,7 @@ class Worker(QtCore.QObject):
                     # Have to get the two nearest neighbours
                     nearestids = self.joinlind.nearestNeighbor(
                                              inputgeom.asPoint(), 2)
-                    if nearestids[0] == infeatureid:
+                    if nearestids[0] == infeatureid and len(nearestids) > 1:
                         # The first feature is the same as the input
                         # feature, so choose the second one
                         nnfeature = self.joinvl.getFeatures(
@@ -320,9 +373,9 @@ class Worker(QtCore.QObject):
                     # Not a self join, so we can search for only the
                     # nearest neighbour (1)
                     nearestid = self.joinlind.nearestNeighbor(
-                        inputgeom.asPoint(), 1)[0]
+                                           inputgeom.asPoint(), 1)[0]
                     nnfeature = self.joinvl.getFeatures(
-                        QgsFeatureRequest(nearestid)).next()
+                                 QgsFeatureRequest(nearestid)).next()
                 mindist = inputgeom.distance(nnfeature.geometry())
             elif (self.joinvl.wkbType() == QGis.WKBPolygon or
                   self.joinvl.wkbType() == QGis.WKBPolygon25D or
@@ -341,7 +394,7 @@ class Worker(QtCore.QObject):
                     nearestindexes = self.joinlind.nearestNeighbor(
                         inputgeom.asPoint(), 2)
                     nearestindexid = nearestindexes[0]
-                    if nearestindexid == infeatureid:
+                    if nearestindexid == infeatureid and len(nearestindexes) > 1:
                         nearestindexid = nearestindexes[1]
                 nnfeature = self.joinvl.getFeatures(
                     QgsFeatureRequest(nearestindexid)).next()
@@ -403,7 +456,7 @@ class Worker(QtCore.QObject):
                     nearestindexes = self.joinlind.nearestNeighbor(
                         centroidgeom, 2)
                     nearestid = nearestindexes[0]
-                    if nearestid == infeatureid:
+                    if nearestid == infeatureid and len(nearestindexes) > 1:
                         nearestid = nearestindexes[1]
                 nnfeature = self.joinvl.getFeatures(
                     QgsFeatureRequest(nearestid)).next()

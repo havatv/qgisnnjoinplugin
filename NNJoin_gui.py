@@ -26,7 +26,7 @@ from os.path import join
 
 from qgis.core import (QgsMessageLog, QgsMapLayerRegistry, QGis,
                        QgsMapLayer)
-#QgsVectorLayer
+                       #, QgsVectorLayer)
 from qgis.gui import QgsMessageBar
 #from qgis.utils import showPluginHelp
 
@@ -179,6 +179,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             if layerId == joinlayerId:
                 self.showInfo("The join layer is the same as the"
                               " input layer - doing a self join!")
+
         except:
             import traceback
             self.showError(traceback.format_exc())
@@ -235,10 +236,23 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         layerId = self.inputVectorLayer.itemData(layerindex)
         self.inputlayerid = layerId
         inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+        #if inputlayer is not None:
+        #    self.showInfo('Input layer: ' + str(inputlayer.metadata()) +
+        #                  ' crs: ' + str(inputlayer.crs()))
+        #    QgsMessageLog.logMessage('Info: ' + 'Input layer capabilities: '
+        #                             + str(inputlayer.capabilitiesString()),
+        #                             self.NNJOIN, QgsMessageLog.INFO)
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         self.joinlayerid = joinlayerId
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        #if joinlayer is not None:
+        #    self.showInfo('Join layer: ' + str(joinlayer.metadata()) +
+        #                  ' crs: ' + str(joinlayer.crs()))
+        #    self.showInfo('Join layer capabilities: ' +
+        #                  str(joinlayer.dataProvider().capabilities()))
+        #    self.showInfo('Join layer capabilities: ' +
+        #                  str(joinlayer.capabilitiesString()))
         # Update the UI label with input geometry type information
         if inputlayer is not None:
             inputwkbtype = inputlayer.wkbType()
@@ -258,9 +272,11 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                              ' distances will be in decimal degrees!')
         # Different CRSs? - give a warning!
         if (inputlayer is not None and joinlayer is not None and
-                inputlayer.dataProvider().crs() !=
-                joinlayer.dataProvider().crs()):
-            self.showWarning('Layers have different CRS!')
+                inputlayer.crs() != joinlayer.crs()):
+            self.showWarning('Layers have different CRS! - Input CRS id: ' +
+                             str(inputlayer.crs().srsid()) +
+                             ' Join CRS id: ' +
+                             str(joinlayer.crs().srsid()))
         self.updateui()
 
     def useindexchanged(self, number=0):
