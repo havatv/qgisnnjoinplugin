@@ -31,6 +31,7 @@ from qgis.core import QgsRectangle, QgsCoordinateTransform
 from PyQt4 import QtCore
 from PyQt4.QtCore import QCoreApplication, QVariant
 
+
 class Worker(QtCore.QObject):
     '''The worker that does the heavy lifting.
     /* QGIS offers spatial indexes to make spatial search more
@@ -142,7 +143,8 @@ class Worker(QtCore.QObject):
             #self.status.emit('Started!')
             # Check the geometry type and prepare the output layer
             geometryType = self.inpvl.geometryType()
-            #self.status.emit('Input layer geometry type: ' + str(geometryType))
+            #self.status.emit('Input layer geometry type: ' +
+            #                               str(geometryType))
             geometrytypetext = 'Point'
             if geometryType == QGis.Point:
                 geometrytypetext = 'Point'
@@ -392,9 +394,10 @@ class Worker(QtCore.QObject):
                     # Self join and same feature, so get the two
                     # first two neighbours
                     nearestindexes = self.joinlind.nearestNeighbor(
-                        inputgeom.asPoint(), 2)
+                                             inputgeom.asPoint(), 2)
                     nearestindexid = nearestindexes[0]
-                    if nearestindexid == infeatureid and len(nearestindexes) > 1:
+                    if (nearestindexid == infeatureid and
+                                  len(nearestindexes) > 1):
                         nearestindexid = nearestindexes[1]
                 nnfeature = self.joinvl.getFeatures(
                     QgsFeatureRequest(nearestindexid)).next()
