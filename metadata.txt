@@ -1,4 +1,4 @@
-# This file contains metadata for your plugin. Beginning
+﻿# This file contains metadata for your plugin. Beginning
 # with version 2.0 of QGIS this is the proper way to supply 
 # information about a plugin. The old method of 
 # embedding metadata in __init__.py will 
@@ -50,7 +50,8 @@ changelog=0.0.1
     - Apply join layer spatial index for non-point input layers
     - Optimised memory layer addfeatures
     1.2.2
-    - Fixed a strange crash issue, avoid crash for self join of single feature layers, and tried to improve the robustness of the plugin
+    - Fixed a strange crash issue, avoid crash for self join of single feature layers, and tried to improve the robustness of the plugin.
+    - Fixed issue #1 (crashing on Mac OS X).
     
 category=Analysis
 # Tags are comma separated with spaces allowed
