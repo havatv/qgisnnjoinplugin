@@ -1,6 +1,7 @@
 #!/bin/bash
 LRELEASE=$1
-LOCALES=$2
+shift
+LOCALES="$@"
 PLUGIN_PREFIX=NNJoin_
 
 for LOCALE in ${LOCALES}

@@ -1,8 +1,7 @@
-﻿# This file contains metadata for your plugin. Beginning
-# with version 2.0 of QGIS this is the proper way to supply 
-# information about a plugin. The old method of 
-# embedding metadata in __init__.py will 
-# is no longer supported since version 2.0.
+# This file contains metadata for your plugin. Beginning
+# with version 1.8 this is the preferred way to supply information about a
+# plugin. The current method of embedding metadata in __init__.py will
+# be supported until version 2.0
 
 # This file should be included when you package your plugin.
 
@@ -10,9 +9,9 @@
 
 [general]
 name=NNJoin
-qgisMinimumVersion=2.0
 description=Nearest neighbour join.  Join vector layers based on nearest neighbour relationships.
-about=The NNPlugin joins two vector layers (the input and the join layer) based on nearest neighbour relationships.  All geometry type combinations are supported.  A feature from the input layer is joined to the nearest feature in the join layer.  The result of the join is a new vector layer with the same geometry type and coordinate reference system as the input layer.  Joining layers with different Coordinate Reference Systems (CRS) is supported, as long as the join layer coordinate system is a projected CRS.  The join and distance calculations is performed using the join layer CRS.  Self joins are supported. For self joins, each feature in the layer is joined to its nearest neighbour within the layer.  A spatial index (QgsSpatialIndex) on the join layer is used to speed up the join for layers with non-multi-geometry types.  
+about=The NNPlugin joins two vector layers (the input and the join layer) based on nearest neighbour relationships.  All geometry type combinations are supported.  A feature from the input layer is joined to the nearest feature in the join layer.  The result of the join is a new vector layer with the same geometry type and coordinate reference system as the input layer.  Joining layers with different Coordinate Reference Systems (CRS) is supported, as long as the join layer coordinate system is a projected CRS.  The join and distance calculations is performed using the join layer CRS.  Self joins are supported. For self joins, each feature in the layer is joined to its nearest neighbour within the layer.  A spatial index (QgsSpatialIndex) on the join layer is used to speed up the join for layers with non-multi-geometry types.
+qgisMinimumVersion=2.0
 version=1.2.2
 author=Håvard Tveite, NMBU
 email=havard.tveite@nmbu.no
@@ -50,13 +49,11 @@ changelog=1.2.2
     0.2.0
     - Added support for all vector layer types
     0.1.0
-    - Added functionality for joining vector layers based on neighbour relationships.
-    0.0.1
     - Initial version
-    
-category=Analysis
-# Tags are comma separated with spaces allowed
+
+# tags are comma separated with spaces allowed
 tags=join,distance,nearest,neighbour,neighbor,spatial join,closest,vector layer,vector,analysis
+category=Vector
 
 homepage=http://hub.qgis.org/projects/nnjoin
 #http://arken.umb.no/~havatv/gis/qgisplugins/NNJoin
@@ -68,3 +65,4 @@ experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version
 deprecated=False
+
