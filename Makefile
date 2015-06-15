@@ -13,8 +13,8 @@
 # *																		 *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU General Public License as published by  *
-# *   the Free Software Foundation; either version 2 of the License, or	 *
-# *   (at your option) any later version.								   *
+# *   the Free Software Foundation; either version 2 of the License, or	    *
+# *   (at your option) any later version.	                            *
 # *																		 *
 # ***************************************************************************/
 
@@ -36,7 +36,7 @@ LRELEASE = lrelease
 
 # translation
 SOURCES = \
-	__init__.py \
+    __init__.py \
     NNJoin_plugin.py \
     NNJoin_gui.py \
     NNJoin_engine.py
@@ -44,7 +44,7 @@ SOURCES = \
 PLUGINNAME = NNJoin
 
 PY_FILES = \
-	__init__.py \
+    __init__.py \
     NNJoin_plugin.py \
     NNJoin_gui.py \
     NNJoin_engine.py

@@ -60,3 +60,4 @@ target/
 
 # Generated files
 resources_rc.py
+*.zip
