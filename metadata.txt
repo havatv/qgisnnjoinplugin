@@ -22,37 +22,37 @@ email=havard.tveite@nmbu.no
 # Optional items:
 
 # Uncomment the following line and add your changelog entries:
-changelog=0.0.1
-    - Initial version
-    0.1.0
-    - Added functionality for joining vector layers based on neighbour relationships.
-    0.2.0
-    - Added support for all vector layer types
-    0.2.1
-    - Fixed some translation issues
-    1.0.0
-    - Threading
-    - Spatial index for input point layers
-    - Use of the QGIS messagebar
-    1.0.1
-    - Fixed the progressbar in the QGIS messagebar
-    1.0.2
-    - Removed plugin from the vector plugin toolbar
-    - Added datasets for testing the plugin
-    1.0.3
-    - Fixed the tags
+changelog=1.2.2
+    - Fixed a strange crash issue, avoid crash for self join of single feature layers, and tried to improve the robustness of the plugin.
+    - Fixed issue #1 (crashing on Mac OS X).
+    1.2.1
+    - Apply join layer spatial index for non-point input layers
+    - Optimised memory layer addfeatures
+    1.2.0
+    - Join layer spatial index used for join layers with geometry type linestring and polygon
     1.1.0
     - Fix bug where the nearest neighbours were found using the approximate geometries of the join layer index
     - Let the user choose simplified input geometries (centroids) to speed up the join with a spatial index
     - User interface update
-    1.2.0
-    - Join layer spatial index used for join layers with geometry type linestring and polygon
-    1.2.1
-    - Apply join layer spatial index for non-point input layers
-    - Optimised memory layer addfeatures
-    1.2.2
-    - Fixed a strange crash issue, avoid crash for self join of single feature layers, and tried to improve the robustness of the plugin.
-    - Fixed issue #1 (crashing on Mac OS X).
+    1.0.3
+    - Fixed the tags
+    1.0.2
+    - Removed plugin from the vector plugin toolbar
+    - Added datasets for testing the plugin
+    1.0.1
+    - Fixed the progressbar in the QGIS messagebar
+    1.0.0
+    - Threading
+    - Spatial index for input point layers
+    - Use of the QGIS messagebar
+    0.2.1
+    - Fixed some translation issues
+    0.2.0
+    - Added support for all vector layer types
+    0.1.0
+    - Added functionality for joining vector layers based on neighbour relationships.
+    0.0.1
+    - Initial version
     
 category=Analysis
 # Tags are comma separated with spaces allowed
