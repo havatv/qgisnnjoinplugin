@@ -221,16 +221,16 @@ The current version is 1.2.2
   - Support for index usage for all non-point input layers
     except multi-geometry layers.
 
-- 1.2.0:
+- 1.2.0
 
   - Support for indexes on non-point join layers.
 
-- 1.1.0:
+- 1.1.0
 
   - Allow the user to choose centroids for the input geometries.
   - Stopped using approximate join layer geometries.
          
-- 1.0.0:
+- 1.0.0
 
   - Threading.
 
