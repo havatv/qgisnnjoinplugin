@@ -55,8 +55,8 @@ changelog=1.2.2
 tags=join,distance,nearest,neighbour,neighbor,spatial join,closest,vector layer,vector,analysis
 category=Vector
 
-homepage=http://hub.qgis.org/projects/nnjoin
-#http://arken.umb.no/~havatv/gis/qgisplugins/NNJoin
+#homepage=http://hub.qgis.org/projects/nnjoin
+http://arken.nmbu.no/~havatv/gis/qgisplugins/NNJoin
 tracker=https://github.com/havatv/qgisnnjoinplugin/issues
 repository=https://github.com/havatv/qgisnnjoinplugin.git
 icon=nnjoin.png
