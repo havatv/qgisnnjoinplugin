@@ -210,19 +210,29 @@ Versions
 ===============
 The current version is 1.2.2
 
-- 1.2.2: Fixed a strange crash issue
-         Avoid crash for self join of single feature layers
-         Attempts to improve the robustness of the plugin
+- 1.2.2
 
-- 1.2.1: Support for index usage for all non-point input layers
-         except multi-geometry layers.
+  - Fixed a strange crash issue.
+  - Avoid crash for self join of single feature layers.
+  - Attempts to improve the robustness of the plugin.
 
-- 1.2.0: Support for indexes on non-point join layers.
+- 1.2.1
 
-- 1.1.0: Allow the user to choose centroids for the input geometries.
-         Stopped using approximate join layer geometries.
+  - Support for index usage for all non-point input layers
+    except multi-geometry layers.
+
+- 1.2.0:
+
+  - Support for indexes on non-point join layers.
+
+- 1.1.0:
+
+  - Allow the user to choose centroids for the input geometries.
+  - Stopped using approximate join layer geometries.
          
-- 1.0.0: Threading
+- 1.0.0:
+
+  - Threading.
 
 
 Links
