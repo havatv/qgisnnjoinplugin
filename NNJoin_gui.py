@@ -30,6 +30,15 @@ from qgis.core import (QgsMessageLog, QgsMapLayerRegistry, QGis,
 from qgis.gui import QgsMessageBar
 #from qgis.utils import showPluginHelp
 
+# QGIS 3
+#from qgis.PyQt import uic
+#from qgis.PyQt.QtCore import SIGNAL, QObject, QThread, Qt
+#from qgis.PyQt.QtCore import QCoreApplication, QUrl
+#from qgis.PyQt.QtWidgets import QDialog, QDialogButtonBox
+#from qgis.PyQt.QtWidgets import QProgressBar, QPushButton
+#from qgis.PyQt.QtGui import QDesktopServices
+
+# QGIS 2
 from PyQt4 import uic
 from PyQt4.QtCore import (SIGNAL, QObject, QThread, Qt,
                           QCoreApplication, QUrl)
@@ -109,7 +118,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # to be old style!
         # so does not work with pyuic4:
         #self.button_box.rejected.disconnect(self.reject)
-        QObject.disconnect(self.button_box, SIGNAL("rejected()"), self.reject)
+        # Necessary???
+        #QObject.disconnect(self.button_box, SIGNAL("rejected()"), self.reject)
 
         # Set instance variables
         self.mem_layer = None

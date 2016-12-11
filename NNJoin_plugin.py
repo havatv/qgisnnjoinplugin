@@ -21,11 +21,16 @@
  ***************************************************************************/
 """
 import os.path
-
 # QGIS imports
 from qgis.core import QgsMapLayer
 #import processing
 
+#QGIS 3
+#from qgis.PyQt.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
+#from qgis.PyQt.QtWidgets import QAction, QMessageBox
+#from qgis.PyQt.QtGui import QIcon
+
+#QGIS 2
 from PyQt4.QtCore import (QSettings, QTranslator, qVersion,
                           QCoreApplication)
 from PyQt4.QtGui import QAction, QIcon
