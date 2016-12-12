@@ -112,10 +112,13 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         inpIndexCh.connect(self.layerchanged)
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
         joinIndexCh.connect(self.layerchanged)
-        self.iface.legendInterface().itemAdded.connect(
-            self.layerlistchanged)
-        self.iface.legendInterface().itemRemoved.connect(
-            self.layerlistchanged)
+        theRegistry = QgsMapLayerRegistry.instance()
+        theRegistry.layersAdded.connect(self.layerlistchanged)
+        #self.iface.legendInterface().itemAdded.connect(
+        #    self.layerlistchanged)
+        theRegistry.layersRemoved.connect(self.layerlistchanged)
+        #self.iface.legendInterface().itemRemoved.connect(
+        #    self.layerlistchanged)
         # pyuic4 uses old style connections, so the disconnect has
         # to be old style!
         # so does not work with pyuic4:
@@ -191,7 +194,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             if layerId == joinlayerId:
                 self.showInfo("The join layer is the same as the"
                               " input layer - doing a self join!")
-
         except:
             import traceback
             self.showError(traceback.format_exc())
@@ -290,6 +292,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                              ' Join CRS id: ' +
                              str(joinlayer.crs().srsid()))
         self.updateui()
+        # end of layerchanged
 
     def useindexchanged(self, number=0):
         self.updateui()
@@ -302,21 +305,38 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Repopulate the input and join layer combo boxes
         # Save the currently selected input layer
         inputlayerid = self.inputlayerid
+        layers = QgsMapLayerRegistry.instance().mapLayers()
+        layerslist = []
+        for id in layers.keys():
+            if layers[id].type() == QgsMapLayer.VectorLayer:
+                if not layers[id].isValid():
+                    QMessageBox.information(None,
+                        self.tr('Information'),
+                        'Layer ' + layers[id].name() + ' is not valid')
+                if layers[id].wkbType() != QGis.WKBNoGeometry:
+                    layerslist.append((layers[id].name(), id))
+        if len(layerslist) == 0 or len(layers) == 0:
+            QMessageBox.information(None,
+               self.tr('Information'),
+               self.tr('Vector layers not found'))
+            return
+        # Add the layers to the layers combobox
         self.inputVectorLayer.clear()
-        for alayer in self.iface.legendInterface().layers():
-            if alayer.type() == QgsMapLayer.VectorLayer:
-                self.inputVectorLayer.addItem(alayer.name(), alayer.id())
-        # Set the previous selection
+        #self.dlg.inputVectorLayer.clear()
+        for layerdescription in layerslist:
+            self.inputVectorLayer.addItem(layerdescription[0],
+                                        layerdescription[1])
+        # Set the previous selection for the input layer
         for i in range(self.inputVectorLayer.count()):
             if self.inputVectorLayer.itemData(i) == inputlayerid:
                 self.inputVectorLayer.setCurrentIndex(i)
         # Save the currently selected join layer
         joinlayerid = self.joinlayerid
         self.joinVectorLayer.clear()
-        for alayer in self.iface.legendInterface().layers():
-            if alayer.type() == QgsMapLayer.VectorLayer:
-                self.joinVectorLayer.addItem(alayer.name(), alayer.id())
-        # Set the previous selection
+        for layerdescription in layerslist:
+            self.joinVectorLayer.addItem(layerdescription[0],
+                                        layerdescription[1])
+        # Set the previous selection for the join layer
         for i in range(self.joinVectorLayer.count()):
             if self.joinVectorLayer.itemData(i) == joinlayerid:
                 self.joinVectorLayer.setCurrentIndex(i)

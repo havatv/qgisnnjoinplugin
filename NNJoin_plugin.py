@@ -22,7 +22,8 @@
 """
 import os.path
 # QGIS imports
-from qgis.core import QgsMapLayer
+from qgis.core import QgsMapLayerRegistry, QgsMapLayer
+from qgis.core import QGis
 #import processing
 
 #QGIS 3
@@ -31,9 +32,8 @@ from qgis.core import QgsMapLayer
 #from qgis.PyQt.QtGui import QIcon
 
 #QGIS 2
-from PyQt4.QtCore import (QSettings, QTranslator, qVersion,
-                          QCoreApplication)
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
+from PyQt4.QtGui import QAction, QMessageBox, QIcon
 
 # Plugin imports
 import resources_rc
@@ -199,14 +199,39 @@ class NNJoin(object):
         self.dlg.progressBar.setValue(0.0)
         self.dlg.outputDataset.setText('Result')
         # Populate the input and join layer combo boxes
+        layers = QgsMapLayerRegistry.instance().mapLayers()
+        layerslist = []
+        for id in layers.keys():
+            if layers[id].type() == QgsMapLayer.VectorLayer:
+                if not layers[id].isValid():
+                    QMessageBox.information(None,
+                        self.tr('Information'),
+                        'Layer ' + layers[id].name() + ' is not valid')
+                if layers[id].wkbType() != QGis.WKBNoGeometry:
+                    layerslist.append((layers[id].name(), id))
+        if len(layerslist) == 0 or len(layers) == 0:
+            QMessageBox.information(None,
+               self.tr('Information'),
+               self.tr('Vector layers not found'))
+            return
+        # Add the layers to the layers combobox
         self.dlg.inputVectorLayer.clear()
-        for alayer in self.iface.legendInterface().layers():
-            if alayer.type() == QgsMapLayer.VectorLayer:
-                self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
+        for layerdescription in layerslist:
+            self.dlg.inputVectorLayer.addItem(layerdescription[0],
+                                        layerdescription[1])
+        #for alayer in self.iface.legendInterface().layers():
+        #for alayer in layers:
+        #    if alayer.type() == QgsMapLayer.VectorLayer:
+        #        self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
         self.dlg.joinVectorLayer.clear()
-        for alayer in self.iface.legendInterface().layers():
-            if alayer.type() == QgsMapLayer.VectorLayer:
-                self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
+        #for alayer in self.iface.legendInterface().layers():
+        #for alayer in layers:
+        #    if alayer.type() == QgsMapLayer.VectorLayer:
+        #        self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
+        # Add the layers to the layers combobox
+        for layerdescription in layerslist:
+            self.dlg.joinVectorLayer.addItem(layerdescription[0],
+                                        layerdescription[1])
         # show the dialog (needed for the messagebar cancel button)
         self.dlg.show()
         # Run the dialog event loop
