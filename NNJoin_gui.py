@@ -28,7 +28,6 @@ from qgis.core import QgsMessageLog, QgsMapLayerRegistry
 from qgis.core import QGis
 from qgis.core import QgsMapLayer
 #from qgis.core import QgsWkbTypes
-
 from qgis.gui import QgsMessageBar
 #from qgis.utils import showPluginHelp
 
@@ -42,10 +41,10 @@ from qgis.gui import QgsMessageBar
 
 # QGIS 2
 from PyQt4 import uic
-from PyQt4.QtCore import (SIGNAL, QObject, QThread, Qt,
-                          QCoreApplication, QUrl)
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QProgressBar,
-                         QPushButton, QDesktopServices)
+from PyQt4.QtCore import QObject, QThread, Qt
+from PyQt4.QtCore import QCoreApplication, QUrl
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QProgressBar
+from PyQt4.QtGui import QPushButton, QDesktopServices, QMessageBox
 
 from .NNJoin_engine import Worker
 
@@ -302,6 +301,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # the comboboxes should be updated to include the new
         # possibilities.
         self.layerlistchanging = True
+        self.inputVectorLayer.clear()
+        self.joinVectorLayer.clear()
         # Repopulate the input and join layer combo boxes
         # Save the currently selected input layer
         inputlayerid = self.inputlayerid
@@ -315,13 +316,15 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                         'Layer ' + layers[id].name() + ' is not valid')
                 if layers[id].wkbType() != QGis.WKBNoGeometry:
                     layerslist.append((layers[id].name(), id))
-        if len(layerslist) == 0 or len(layers) == 0:
-            QMessageBox.information(None,
-               self.tr('Information'),
-               self.tr('Vector layers not found'))
-            return
+        # If no vector layers - exit
+        #if len(layerslist) == 0 or len(layers) == 0:
+            #QMessageBox.information(None,
+            #   self.tr('Information'),
+            #   self.tr('Vector layers not found'))
+            #return
+            #self.reject()
         # Add the layers to the layers combobox
-        self.inputVectorLayer.clear()
+        #self.inputVectorLayer.clear()
         #self.dlg.inputVectorLayer.clear()
         for layerdescription in layerslist:
             self.inputVectorLayer.addItem(layerdescription[0],
