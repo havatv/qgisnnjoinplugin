@@ -37,7 +37,7 @@ from PyQt4.QtGui import QAction, QIcon
 
 # Plugin imports
 import resources_rc
-from NNJoin_gui import NNJoinDialog
+from .NNJoin_gui import NNJoinDialog
 
 
 class NNJoin(object):

@@ -24,9 +24,11 @@
 from os.path import dirname
 from os.path import join
 
-from qgis.core import (QgsMessageLog, QgsMapLayerRegistry, QGis,
-                       QgsMapLayer)
-                       #, QgsVectorLayer)
+from qgis.core import QgsMessageLog, QgsMapLayerRegistry
+from qgis.core import QGis
+from qgis.core import QgsMapLayer
+#from qgis.core import QgsWkbTypes
+
 from qgis.gui import QgsMessageBar
 #from qgis.utils import showPluginHelp
 
@@ -45,7 +47,7 @@ from PyQt4.QtCore import (SIGNAL, QObject, QThread, Qt,
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QProgressBar,
                          QPushButton, QDesktopServices)
 
-from NNJoin_engine import Worker
+from .NNJoin_engine import Worker
 
 FORM_CLASS, _ = uic.loadUiType(join(
     dirname(__file__), 'ui_frmNNJoin.ui'))
