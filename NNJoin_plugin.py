@@ -27,7 +27,8 @@ from qgis.core import QGis
 #import processing
 
 #QGIS 3
-#from qgis.PyQt.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
+#from qgis.PyQt.QtCore import QSettings, QCoreApplication, QTranslator
+#from qgis.PyQt.QtCore import qVersion
 #from qgis.PyQt.QtWidgets import QAction, QMessageBox
 #from qgis.PyQt.QtGui import QIcon
 

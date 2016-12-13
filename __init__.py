@@ -25,7 +25,7 @@
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Return the NNJoin class from file NNJoin_plugin.
+    """Return the NNJoin class from the file NNJoin_plugin.
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """

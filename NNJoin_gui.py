@@ -238,7 +238,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         QgsMessageLog.logMessage(self.tr('Worker') + ': ' + message_string,
                                  self.NNJOIN, QgsMessageLog.INFO)
 
-
     def joinlayerchanged(self, number=0):
         if self.layerlistchanging:
             return
@@ -446,21 +445,29 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             # Check if the distance field name already is used
             inputfields = inputlayer.pendingFields().toList()
             #self.showInfo("Input fields: " + str(inputfields[0].name()))
-            self.distancefieldname.setStyleSheet("background:#fff;");
+            self.distancefieldname.setStyleSheet("background:#fff;")
             for infield in inputfields:
-              if infield.name() == self.distancefieldname.text():
-                self.distancefieldname.setStyleSheet("background:#f00;");
-                self.showInfo("Distance field name conflict in input layer")
-                if self.button_box.button(QDialogButtonBox.Ok).isEnabled():
-                  self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+                if infield.name() == self.distancefieldname.text():
+                    self.distancefieldname.setStyleSheet("background:#f00;")
+                    self.showInfo(
+                           "Distance field name conflict in input layer")
+                    if self.button_box.button(
+                                         QDialogButtonBox.Ok).isEnabled():
+                        self.button_box.button(
+                                   QDialogButtonBox.Ok).setEnabled(False)
             if joinlayer is not None:
-              joinfields = joinlayer.pendingFields().toList()
-              for joinfield in joinfields:
-                if self.joinPrefix.text()+joinfield.name() == self.distancefieldname.text():
-                  self.distancefieldname.setStyleSheet("background:#f00;");
-                  self.showInfo("Distance field name conflict in join layer")
-                  if self.button_box.button(QDialogButtonBox.Ok).isEnabled():
-                    self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+                joinfields = joinlayer.pendingFields().toList()
+                for joinfield in joinfields:
+                    if (self.joinPrefix.text() + joinfield.name() ==
+                                           self.distancefieldname.text()):
+                        self.distancefieldname.setStyleSheet(
+                                                       "background:#f00;")
+                        self.showInfo(
+                             "Distance field name conflict in join layer")
+                        if self.button_box.button(
+                                          QDialogButtonBox.Ok).isEnabled():
+                            self.button_box.button(
+                                    QDialogButtonBox.Ok).setEnabled(False)
         else:
             # No input layer defined, so options are disabled
             self.approximate_input_geom_cb.setVisible(False)
