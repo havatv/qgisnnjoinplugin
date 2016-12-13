@@ -55,12 +55,13 @@ The result layer
 =================
 
 The result layer will contain all the attributes of both
-the *input* and *join* layers plus a new attribute
-"distance" that contains the distance between the joined features.
+the *input* and *join* layers plus a new attribute that contains
+the distance between the joined features (the default name of the
+distance attribute is "distance", but can be changed by the user).
 The attributes from the *join* layer will get a prefix
 (the default is "join\_", but this can be set by the user).
 If a join prefix is not used, attributes from the join layer that
-have the same name as attributes in the input layer will not be
+have the same name as an attributes in the input layer will not be
 included in the output layer.
 
 Options
@@ -79,6 +80,9 @@ Options
 
 - The user can specify the prefix of the join layer attributes in the
   output layer.
+
+- The user can specify the name of the attribute that will contain the
+  distance to the nearest neighbour.
 
 - The user can specify the name of the result layer.
 
@@ -208,7 +212,13 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 1.2.2
+The current version is 1.3.0
+
+- 1.3.0
+
+  - Allow the specification of the name of the attribute
+    that will contain the distance to the nearest neighbour.
+  - Modernisation of the code.
 
 - 1.2.2
 

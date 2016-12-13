@@ -1,13 +1,16 @@
 [general]
 name=NNJoin
-version=1.2.2
+version=1.3.0
 qgisMinimumVersion=2.0
 qgisMaximumVersion=2.30
 description=Nearest neighbour join.  Join vector layers based on nearest neighbour relationships.
 author=Håvard Tveite, NMBU
 email=havard.tveite@nmbu.no
 about=The NNPlugin joins two vector layers (the input and the join layer) based on nearest neighbour relationships.  All geometry type combinations are supported.  A feature from the input layer is joined to the nearest feature in the join layer.  The result of the join is a new vector layer with the same geometry type and coordinate reference system as the input layer.  Joining layers with different Coordinate Reference Systems (CRS) is supported, as long as the join layer coordinate system is a projected CRS.  The join and distance calculations is performed using the join layer CRS.  Self joins are supported. For self joins, each feature in the layer is joined to its nearest neighbour within the layer.  A spatial index (QgsSpatialIndex) on the join layer is used to speed up the join for layers with non-multi-geometry types.
-changelog=1.2.2
+changelog=1.3.0
+    - Allow the specification of the name of the attribute that will contain the distance to the nearest neighbour.
+    - Modernisation of the code.
+    1.2.2
     - Fixed a strange crash issue, avoid crash for self join of single feature layers, and tried to improve the robustness of the plugin.
     - Fixed issue #1 (crashing on Mac OS X).
     1.2.1

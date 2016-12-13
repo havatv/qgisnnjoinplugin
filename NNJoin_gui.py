@@ -64,10 +64,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.HELP = self.tr('Help')
         self.OK = self.tr('OK')
         super(NNJoinDialog, self).__init__(parent)
-        # The following makes the plugin dialog window always stay
-        # on top (above all other windows):
-        #QDialog.__init__(self, None, Qt.WindowStaysOnTopHint)
-
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
@@ -239,8 +235,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                  self.NNJOIN, QgsMessageLog.INFO)
 
     def joinlayerchanged(self, number=0):
+        # If the layer list is being updated, don't do anything
         if self.layerlistchanging:
             return
+        # Retrieve the join layer
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         self.joinlayerid = joinlayerId
@@ -256,27 +254,16 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # If the layer list is being updated, don't do anything
         if self.layerlistchanging:
             return
+        # Retrieve the input layer
         layerindex = self.inputVectorLayer.currentIndex()
         layerId = self.inputVectorLayer.itemData(layerindex)
         self.inputlayerid = layerId
         inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
-        #if inputlayer is not None:
-        #    self.showInfo('Input layer: ' + str(inputlayer.metadata()) +
-        #                  ' crs: ' + str(inputlayer.crs()))
-        #    QgsMessageLog.logMessage('Info: ' + 'Input layer capabilities: '
-        #                             + str(inputlayer.capabilitiesString()),
-        #                             self.NNJOIN, QgsMessageLog.INFO)
+        # Retrieve the join layer
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         self.joinlayerid = joinlayerId
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
-        #if joinlayer is not None:
-        #    self.showInfo('Join layer: ' + str(joinlayer.metadata()) +
-        #                  ' crs: ' + str(joinlayer.crs()))
-        #    self.showInfo('Join layer capabilities: ' +
-        #                  str(joinlayer.dataProvider().capabilities()))
-        #    self.showInfo('Join layer capabilities: ' +
-        #                  str(joinlayer.capabilitiesString()))
         # Update the UI label with input geometry type information
         if inputlayer is not None:
             inputwkbtype = inputlayer.wkbType()
@@ -287,6 +274,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             joinwkbtype = joinlayer.wkbType()
             joinlayerwkbtext = self.getwkbtext(joinwkbtype)
             self.joingeometrytypelabel.setText(joinlayerwkbtext)
+        # Enable the OK button (if layers are OK)
         if inputlayer is not None and joinlayer is not None:
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         # Check the coordinate systems
@@ -297,10 +285,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Different CRSs? - give a warning!
         if (inputlayer is not None and joinlayer is not None and
                 inputlayer.crs() != joinlayer.crs()):
-            self.showWarning('Layers have different CRS! - Input CRS id: ' +
-                             str(inputlayer.crs().srsid()) +
-                             ' Join CRS id: ' +
-                             str(joinlayer.crs().srsid()))
+            self.showWarning('Layers have different CRS! - Input CRS authid: ' +
+                             str(inputlayer.crs().authid()) +
+                             ' - Join CRS authid: ' +
+                             str(joinlayer.crs().authid()))
         self.updateui()
         # end of layerchanged
 
@@ -543,7 +531,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
 
     def help(self):
         QDesktopServices.openUrl(QUrl.fromLocalFile(
-                         self.plugin_dir + "/help/index.html"))
+                         self.plugin_dir + "/help/html/index.html"))
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
