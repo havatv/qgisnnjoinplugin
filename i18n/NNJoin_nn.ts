@@ -3,97 +3,112 @@
 <context>
     <name>NNJoin</name>
     <message>
-        <location filename="NNJoin_plugin.py" line="69"/>
+        <location filename="NNJoin_plugin.py" line="75"/>
         <source>&amp;NNJoin</source>
         <translation>&amp;NN-kopling</translation>
     </message>
     <message>
-        <location filename="NNJoin_plugin.py" line="68"/>
+        <location filename="NNJoin_plugin.py" line="74"/>
         <source>NNJoin</source>
         <translation>NN-kopling</translation>
+    </message>
+    <message>
+        <location filename="NNJoin_plugin.py" line="230"/>
+        <source>Information</source>
+        <translation>Informasjon</translation>
+    </message>
+    <message>
+        <location filename="NNJoin_plugin.py" line="230"/>
+        <source>Vector layers not found</source>
+        <translation>Ingen vektorlag</translation>
     </message>
 </context>
 <context>
     <name>NNJoinDialog</name>
     <message>
-        <location filename="NNJoin_gui.py" line="49"/>
+        <location filename="NNJoin_gui.py" line="61"/>
         <source>NNJoin</source>
         <translation>NN-kopling</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="126"/>
+        <location filename="NNJoin_gui.py" line="137"/>
         <source>No input layer defined</source>
         <translation>Innlaget mangler</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="132"/>
+        <location filename="NNJoin_gui.py" line="143"/>
         <source>No join layer defined</source>
         <translation>Koplingslaget mangler</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="148"/>
+        <location filename="NNJoin_gui.py" line="161"/>
         <source>Joining</source>
         <translation>Kopler</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="50"/>
+        <location filename="NNJoin_gui.py" line="62"/>
         <source>Cancel</source>
         <translation>Avbryt</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="199"/>
+        <location filename="NNJoin_gui.py" line="213"/>
         <source>NNJoin finished</source>
         <translation>NN-kopling avslutta</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="417"/>
+        <location filename="NNJoin_gui.py" line="508"/>
         <source>Killing worker</source>
         <translation>Dreper arbeidsprosessen</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="423"/>
+        <location filename="NNJoin_gui.py" line="515"/>
         <source>Error</source>
         <translation>Feil</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="431"/>
+        <location filename="NNJoin_gui.py" line="523"/>
         <source>Warning</source>
         <translation>Advarsel</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="439"/>
+        <location filename="NNJoin_gui.py" line="531"/>
         <source>Info</source>
         <translation>Informasjon</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="53"/>
+        <location filename="NNJoin_gui.py" line="65"/>
         <source>OK</source>
         <translation>Køyr</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="51"/>
+        <location filename="NNJoin_gui.py" line="63"/>
         <source>Close</source>
         <translation>Avslutt</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="223"/>
+        <location filename="NNJoin_gui.py" line="238"/>
         <source>Worker</source>
         <translation>Arbeidsprosess</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="209"/>
+        <location filename="NNJoin_gui.py" line="223"/>
         <source>Aborted</source>
         <translation>Avbrote</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="211"/>
+        <location filename="NNJoin_gui.py" line="225"/>
         <source>No layer created</source>
         <translation>Ikkje noko lag</translation>
     </message>
     <message>
-        <location filename="NNJoin_gui.py" line="52"/>
+        <location filename="NNJoin_gui.py" line="64"/>
         <source>Help</source>
         <translation>Hjelp</translation>
+    </message>
+    <message>
+        <location filename="NNJoin_gui.py" line="327"/>
+        <source>Information</source>
+        <translation>Informasjon</translation>
     </message>
 </context>
 <context>
@@ -119,12 +134,12 @@
         <translation>Resultatlag</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="286"/>
+        <location filename="ui_frmNNJoin.ui" line="323"/>
         <source>Indicates the progress of the join operation</source>
         <translation>Indikerer framdrifta i arbeidet</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="302"/>
+        <location filename="ui_frmNNJoin.ui" line="339"/>
         <source>OK to run the join&lt;br&gt;Close to quit&lt;br&gt;Cancel to abort the join</source>
         <translation>Køyr: Utfør koplinga&lt;br&gt;Avslutt: Avslutt programmet&lt;br&gt;Avbryt: Avbryt programmet</translation>
     </message>
@@ -199,20 +214,35 @@
         <translation>Bruk tilnærma koplingsgeometri.&lt;br&gt;Resultatet vil også være tilnærma.</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="318"/>
+        <location filename="ui_frmNNJoin.ui" line="355"/>
         <source>Get some help</source>
         <translation>Få hjelp</translation>
     </message>
     <message>
-        <location filename="ui_frmNNJoin.ui" line="321"/>
+        <location filename="ui_frmNNJoin.ui" line="358"/>
         <source>Help</source>
         <translation>Hjelp</translation>
+    </message>
+    <message>
+        <location filename="ui_frmNNJoin.ui" line="274"/>
+        <source>Neighbour distance field:</source>
+        <translation>Felt for naboavstand</translation>
+    </message>
+    <message>
+        <location filename="ui_frmNNJoin.ui" line="281"/>
+        <source>The field name used for the distance to the nearest neighbour.&lt;br&gt;Can not be the same as an existing field name.</source>
+        <translation>Namnet til feltet med avstand til nærmaste nabo.&lt;br&gt;Kan ikkje vere likt eit eksisterande feltnamn.</translation>
+    </message>
+    <message>
+        <location filename="ui_frmNNJoin.ui" line="284"/>
+        <source>distance</source>
+        <translation>avstand</translation>
     </message>
 </context>
 <context>
     <name>Worker</name>
     <message>
-        <location filename="NNJoin_engine.py" line="277"/>
+        <location filename="NNJoin_engine.py" line="357"/>
         <source>CRS Transformation error!</source>
         <translation>Koordinattransformasjonsfeil!</translation>
     </message>

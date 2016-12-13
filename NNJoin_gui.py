@@ -110,20 +110,15 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         inpIndexCh = self.inputVectorLayer.currentIndexChanged['QString']
         inpIndexCh.connect(self.layerchanged)
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
-        joinIndexCh.connect(self.layerchanged)
+        #joinIndexCh.connect(self.layerchanged)
+        joinIndexCh.connect(self.joinlayerchanged)
+        self.distancefieldname.editingFinished.connect(self.layerchanged)
+        self.joinPrefix.editingFinished.connect(self.layerchanged)
         theRegistry = QgsMapLayerRegistry.instance()
         theRegistry.layersAdded.connect(self.layerlistchanged)
-        #self.iface.legendInterface().itemAdded.connect(
-        #    self.layerlistchanged)
         theRegistry.layersRemoved.connect(self.layerlistchanged)
-        #self.iface.legendInterface().itemRemoved.connect(
-        #    self.layerlistchanged)
-        # pyuic4 uses old style connections, so the disconnect has
-        # to be old style!
-        # so does not work with pyuic4:
-        #self.button_box.rejected.disconnect(self.reject)
-        # Necessary???
-        #QObject.disconnect(self.button_box, SIGNAL("rejected()"), self.reject)
+        # Disconnect the cancel button to avoid exiting.
+        self.button_box.rejected.disconnect(self.reject)
 
         # Set instance variables
         self.mem_layer = None
@@ -156,10 +151,12 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             #useindex = True
             useindex = self.use_index_nonpoint_cb.isChecked()
             useindexapproximation = self.use_indexapprox_cb.isChecked()
+            distancefieldname = self.distancefieldname.text()
             # create a new worker instance
             worker = Worker(inputlayer, joinlayer, outputlayername,
                             approximateinputgeom, joinprefix,
-                            useindexapproximation, useindex)
+                            useindexapproximation, useindex,
+                            distancefieldname)
             # configure the QgsMessageBar
             msgBar = self.iface.messageBar().createMessage(
                                                 self.tr('Joining'), '')
@@ -198,6 +195,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.showError(traceback.format_exc())
         else:
             pass
+        # End of startworker
 
     def workerFinished(self, ok, ret):
         """Handles the output from the worker and cleans up after the
@@ -229,6 +227,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         self.button_box.button(QDialogButtonBox.Close).setEnabled(True)
         self.button_box.button(QDialogButtonBox.Cancel).setEnabled(False)
+        # End of workerFinished
 
     def workerError(self, exception_string):
         """Report an error from the worker."""
@@ -238,6 +237,19 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         """Report an info message from the worker."""
         QgsMessageLog.logMessage(self.tr('Worker') + ': ' + message_string,
                                  self.NNJOIN, QgsMessageLog.INFO)
+
+
+    def joinlayerchanged(self, number=0):
+        if self.layerlistchanging:
+            return
+        joinindex = self.joinVectorLayer.currentIndex()
+        joinlayerId = self.joinVectorLayer.itemData(joinindex)
+        self.joinlayerid = joinlayerId
+        joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        if joinlayer is not None and joinlayer.crs().geographicFlag():
+            self.showWarning('Geographic CRS used for the join layer -'
+                             ' distances will be in decimal degrees!')
+        self.layerchanged()
 
     def layerchanged(self, number=0):
         """Do the necessary updates after a layer selection has
@@ -280,9 +292,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         # Check the coordinate systems
         # Geographic? - give a warning!
-        if joinlayer is not None and joinlayer.crs().geographicFlag():
-            self.showWarning('Geographic CRS used for the join layer -'
-                             ' distances will be in decimal degrees!')
+        #if joinlayer is not None and joinlayer.crs().geographicFlag():
+        #    self.showWarning('Geographic CRS used for the join layer -'
+        #                     ' distances will be in decimal degrees!')
         # Different CRSs? - give a warning!
         if (inputlayer is not None and joinlayer is not None and
                 inputlayer.crs() != joinlayer.crs()):
@@ -303,6 +315,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.layerlistchanging = True
         self.inputVectorLayer.clear()
         self.joinVectorLayer.clear()
+#        self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         # Repopulate the input and join layer combo boxes
         # Save the currently selected input layer
         inputlayerid = self.inputlayerid
@@ -317,12 +330,16 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 if layers[id].wkbType() != QGis.WKBNoGeometry:
                     layerslist.append((layers[id].name(), id))
         # If no vector layers - exit
-        #if len(layerslist) == 0 or len(layers) == 0:
+        if len(layerslist) == 0 or len(layers) == 0:
+            self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
             #QMessageBox.information(None,
             #   self.tr('Information'),
             #   self.tr('Vector layers not found'))
             #return
             #self.reject()
+        else:
+            if not self.button_box.button(QDialogButtonBox.Ok).isEnabled():
+                self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         # Add the layers to the layers combobox
         #self.inputVectorLayer.clear()
         #self.dlg.inputVectorLayer.clear()
@@ -345,6 +362,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.joinVectorLayer.setCurrentIndex(i)
         self.layerlistchanging = False
         self.updateui()
+        # End of layerlistchanged
 
     def updateui(self):
         """Do the necessary updates after a layer selection has
@@ -425,11 +443,30 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.use_indexapprox_cb.setCheckState(Qt.Unchecked)
                 self.use_indexapprox_cb.setVisible(False)
                 self.use_indexapprox_cb.blockSignals(False)
+            # Check if the distance field name already is used
+            inputfields = inputlayer.pendingFields().toList()
+            #self.showInfo("Input fields: " + str(inputfields[0].name()))
+            self.distancefieldname.setStyleSheet("background:#fff;");
+            for infield in inputfields:
+              if infield.name() == self.distancefieldname.text():
+                self.distancefieldname.setStyleSheet("background:#f00;");
+                self.showInfo("Distance field name conflict in input layer")
+                if self.button_box.button(QDialogButtonBox.Ok).isEnabled():
+                  self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+            if joinlayer is not None:
+              joinfields = joinlayer.pendingFields().toList()
+              for joinfield in joinfields:
+                if self.joinPrefix.text()+joinfield.name() == self.distancefieldname.text():
+                  self.distancefieldname.setStyleSheet("background:#f00;");
+                  self.showInfo("Distance field name conflict in join layer")
+                  if self.button_box.button(QDialogButtonBox.Ok).isEnabled():
+                    self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         else:
             # No input layer defined, so options are disabled
             self.approximate_input_geom_cb.setVisible(False)
             self.use_indexapprox_cb.setVisible(False)
             self.use_index_nonpoint_cb.setVisible(False)
+        # End of updateui
 
     def getwkbtext(self, number):
         if number == QGis.WKBUnknown:
@@ -463,12 +500,14 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         else:
             showError('Unknown or invalid geometry type: ' + str(number))
             return "Don't know"
+        # End of getwkbtext
 
     def killWorker(self):
         """Kill the worker thread."""
         if self.worker is not None:
-            QgsMessageLog.logMessage(self.tr('Killing worker'),
-                                     self.NNJOIN, QgsMessageLog.INFO)
+            self.showInfo(self.tr('Killing worker'))
+            #QgsMessageLog.logMessage(self.tr('Killing worker'),
+            #                         self.NNJOIN, QgsMessageLog.INFO)
             self.worker.kill()
 
     def showError(self, text):

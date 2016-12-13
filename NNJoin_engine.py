@@ -85,7 +85,8 @@ class Worker(QtCore.QObject):
 
     def __init__(self, inputvectorlayer, joinvectorlayer,
                  outputlayername, approximateinputgeom, joinprefix,
-                 usejoinlayerapproximation, usejoinlayerindex):
+                 usejoinlayerapproximation, usejoinlayerindex,
+                 distancefieldname):
         """Initialise.
 
         Arguments:
@@ -105,6 +106,8 @@ class Worker(QtCore.QObject):
         usejoinlayerindex -- (boolean) should an index for the join
                              layer be used.  Will only use the index
                              geometry approximations for the join
+        distancefieldname -- name of field where neighbour distance
+                             is stored
         """
 
         # Set a variable to control the use of indexes and exact
@@ -125,6 +128,9 @@ class Worker(QtCore.QObject):
         if self.inpvl is self.joinvl:
             # This is a self join
             self.selfjoin = True
+        # The name of the attribute for the calculated distance
+        #self.distancename = "distance"
+        self.distancename = distancefieldname
         # Creating instance variables for the progress bar ++
         # Number of elements that have been processed - updated by
         # calculate_progress
@@ -209,7 +215,19 @@ class Worker(QtCore.QObject):
                 #self.finished.emit(False, None)
                 #return
 
-            outfields.append(QgsField("distance", QVariant.Double))
+            # Check if there is already a "distance" attribute
+            collission = True
+            while collission:
+                collission = False
+                for field in outfields:
+                    if field.name() == self.distancename:
+                        #self.abort = True
+                        #self.status.emit('Distance field already exists!')
+                        #self.finished.emit(False, None)
+                        #break
+                        collission = True
+                        self.distancename = self.distancename + '1'
+            outfields.append(QgsField(self.distancename, QVariant.Double))
             # Create a memory layer
             self.mem_joinl = QgsVectorLayer(geomptext,
                                             self.outputlayername,

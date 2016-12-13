@@ -51,7 +51,7 @@ class NNJoin(object):
             application at run time.
         :type iface: QgsInterface
         """
-        # Save reference to the QGIS interface
+        # Save a reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -73,7 +73,7 @@ class NNJoin(object):
         self.actions = []
         self.NNJOIN = self.tr('NNJoin')
         self.NNJOINAMP = self.tr('&NNJoin')
-        self.menu = self.NNJOIN
+        self.menuname = self.NNJOIN
         self.toolbar = None
         # Separate toolbar for NNJoin:
         #self.toolbar = self.iface.addToolBar(self.NNJOIN)
@@ -159,15 +159,24 @@ class NNJoin(object):
 
         if add_to_menu:
             self.iface.addPluginToMenu(
-                self.menu,
+                self.menuname,
                 action)
 
         # Add the plugin to the plugins toolbar of QGIS
-        self.iface.addToolBarIcon(action)
+        #self.iface.addToolBarIcon(action)
         # Add the plugin to the vector toolbar of QGIS
         #self.iface.addVectorToolBarIcon(action)
-        # Add the plugin to the vector menu of QGIS
-        self.iface.addPluginToVectorMenu(self.tr(self.NNJOINAMP), action)
+        # Add the plugin to a QGIS toolbar
+        if hasattr(self.iface, 'addVectorToolBarIcon'):
+            self.iface.addVectorToolBarIcon(action)
+        else:
+            self.iface.addToolBarIcon(action)
+        # Add the plugin to the a QGIS menu
+        #self.iface.addPluginToVectorMenu(self.NNJOINAMP, action)
+        if hasattr(self.iface, 'addPluginToVectorMenu'):
+            self.iface.addPluginToVectorMenu(self.NNJOINAMP, action)
+        else:
+            self.iface.addPluginToMenu(self.NNJOINAMP, action)
         self.actions.append(action)
 
     def initGui(self):
@@ -183,13 +192,21 @@ class NNJoin(object):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.menu,
+                self.menuname,
                 action)
-            #if self.toolbar != None:
-            #    self.iface.removeToolBarIcon(action)
-            self.iface.removePluginVectorMenu(self.NNJOINAMP, action)
+            #self.iface.removePluginVectorMenu(self.NNJOINAMP, action)
+            # Remove the plugin menu item
+            if hasattr(self.iface, 'removePluginVectorMenu'):
+                self.iface.removePluginVectorMenu(self.NNJOINAMP, action)
+            else:
+                self.iface.removePluginMenu(self.NNJOINAMP, action)
             #self.iface.removeVectorToolBarIcon(action)
-            self.iface.removeToolBarIcon(action)
+            #self.iface.removeToolBarIcon(action)
+            # Remove the plugin toolbar icon
+            if hasattr(self.iface, 'removeVectorToolBarIcon'):
+                self.iface.removeVectorToolBarIcon(action)
+            else:
+                self.iface.removeToolBarIcon(action)
 
     def run(self):
         """Run method that initialises and starts the user interface"""

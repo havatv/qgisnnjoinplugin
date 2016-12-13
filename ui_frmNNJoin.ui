@@ -25,7 +25,7 @@
      <x>13</x>
      <y>10</y>
      <width>541</width>
-     <height>301</height>
+     <height>322</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -249,6 +249,43 @@
           <string>The result layer that contains the join.&lt;br&gt;For each feature of the input layer, the output layer contains that feature with all it's attributes and all the attributes of the nearest feature in the join layer added.</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="spacing">
+          <number>1</number>
+         </property>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Neighbour distance field:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="distancefieldname">
+           <property name="toolTip">
+            <string>The field name used for the distance to the nearest neighbour.&lt;br&gt;Can not be the same as an existing field name.</string>
+           </property>
+           <property name="text">
+            <string>distance</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
