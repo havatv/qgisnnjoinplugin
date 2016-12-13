@@ -216,8 +216,9 @@ class Worker(QtCore.QObject):
                 #return
 
             # Check if there is already a "distance" attribute
+            # (should not be avoided in the user interface)
             collission = True
-            while collission:
+            while collission:   # Iterate until there are no collissions
                 collission = False
                 for field in outfields:
                     if field.name() == self.distancename:
