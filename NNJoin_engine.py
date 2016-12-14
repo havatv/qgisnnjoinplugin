@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 
-from qgis.core import QgsMessageLog, QgsMapLayerRegistry
+from qgis.core import QgsMessageLog
 from qgis.core import QGis
 #from qgis.core import QgsWkbTypes
 from qgis.core import QgsVectorLayer, QgsFeature, QgsSpatialIndex
