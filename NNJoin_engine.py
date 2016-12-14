@@ -21,14 +21,12 @@
  ***************************************************************************/
 """
 
-#from qgis.core import *
 from qgis.core import QgsMessageLog, QgsMapLayerRegistry
 from qgis.core import QGis
 #from qgis.core import QgsWkbTypes
 from qgis.core import QgsVectorLayer, QgsFeature, QgsSpatialIndex
 from qgis.core import QgsFeatureRequest, QgsField, QgsGeometry
 from qgis.core import QgsRectangle, QgsCoordinateTransform
-#from processing import *
 
 #QGIS 3
 #from qgis.PyQt import QtCore
