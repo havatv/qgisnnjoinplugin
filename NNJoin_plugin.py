@@ -99,34 +99,35 @@ class NNJoin(object):
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI"""
         icon_path = os.path.join(os.path.dirname(__file__), "nnjoin.png")
-        self.action = QAction(
+        # Create action that will start plugin configuration
+        self.nnj_action = QAction(
             QIcon(icon_path),
             self.NNJOIN, self.iface.mainWindow())
         # connect the action to the run method
-        self.action.triggered.connect(self.run)
+        self.nnj_action.triggered.connect(self.run)
         # Add toolbar button
         if hasattr(self.iface, 'addVectorToolBarIcon'):
-            self.iface.addVectorToolBarIcon(self.action)
+            self.iface.addVectorToolBarIcon(self.nnj_action)
         else:
-            self.iface.addToolBarIcon(self.action)
+            self.iface.addToolBarIcon(self.nnj_action)
         # Add menu item
         if hasattr(self.iface, 'addPluginToVectorMenu'):
-            self.iface.addPluginToVectorMenu(self.NNJOINAMP, self.action)
+            self.iface.addPluginToVectorMenu(self.NNJOINAMP, self.nnj_action)
         else:
-            self.iface.addPluginToMenu(self.NNJOINAMP, self.action)
+            self.iface.addPluginToMenu(self.NNJOINAMP, self.nnj_action)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         # Remove the plugin menu item
         if hasattr(self.iface, 'removePluginVectorMenu'):
-            self.iface.removePluginVectorMenu(self.NNJOINAMP, self.action)
+            self.iface.removePluginVectorMenu(self.NNJOINAMP, self.nnj_action)
         else:
-            self.iface.removePluginMenu(self.NNJOINAMP, self.action)
+            self.iface.removePluginMenu(self.NNJOINAMP, self.nnj_action)
         # Remove the plugin toolbar icon
         if hasattr(self.iface, 'removeVectorToolBarIcon'):
-            self.iface.removeVectorToolBarIcon(self.action)
+            self.iface.removeVectorToolBarIcon(self.nnj_action)
         else:
-            self.iface.removeToolBarIcon(self.action)
+            self.iface.removeToolBarIcon(self.nnj_action)
 
     def run(self):
         """Run method that initialises and starts the user interface"""
