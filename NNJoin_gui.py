@@ -108,8 +108,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
         #joinIndexCh.connect(self.layerchanged)
         joinIndexCh.connect(self.joinlayerchanged)
-        self.distancefieldname.editingFinished.connect(self.layerchanged)
-        self.joinPrefix.editingFinished.connect(self.layerchanged)
+        self.distancefieldname.editingFinished.connect(self.fieldchanged)
+        self.joinPrefix.editingFinished.connect(self.fieldchanged)
         theRegistry = QgsMapLayerRegistry.instance()
         theRegistry.layersAdded.connect(self.layerlistchanged)
         theRegistry.layersRemoved.connect(self.layerlistchanged)
@@ -150,9 +150,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             distancefieldname = self.distancefieldname.text()
             # create a new worker instance
             worker = Worker(inputlayer, joinlayer, outputlayername,
-                            approximateinputgeom, joinprefix,
-                            useindexapproximation, useindex,
-                            distancefieldname)
+                            joinprefix, distancefieldname,
+                            approximateinputgeom, useindexapproximation,
+                            useindex)
             # configure the QgsMessageBar
             msgBar = self.iface.messageBar().createMessage(
                                                 self.tr('Joining'), '')
@@ -234,6 +234,13 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         QgsMessageLog.logMessage(self.tr('Worker') + ': ' + message_string,
                                  self.NNJOIN, QgsMessageLog.INFO)
 
+    def fieldchanged(self, number=0):
+        # If the layer list is being updated, don't do anything
+        if self.layerlistchanging:
+            return
+        self.updateui()
+        # End of fieldchanged
+
     def joinlayerchanged(self, number=0):
         # If the layer list is being updated, don't do anything
         if self.layerlistchanging:
@@ -243,10 +250,12 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         self.joinlayerid = joinlayerId
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        # Geographic? - give a warning!
         if joinlayer is not None and joinlayer.crs().geographicFlag():
             self.showWarning('Geographic CRS used for the join layer -'
                              ' distances will be in decimal degrees!')
         self.layerchanged()
+        # End of joinlayerchanged
 
     def layerchanged(self, number=0):
         """Do the necessary updates after a layer selection has
@@ -264,31 +273,28 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         self.joinlayerid = joinlayerId
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
-        # Update the UI label with input geometry type information
+        # Update the input layer UI label with input geometry
+        # type information
         if inputlayer is not None:
             inputwkbtype = inputlayer.wkbType()
             inputlayerwkbtext = self.getwkbtext(inputwkbtype)
             self.inputgeometrytypelabel.setText(inputlayerwkbtext)
-        # Update the UI label with join geometry type information
+        # Update the join layer UI label with join geometry type
+        # information
         if joinlayer is not None:
             joinwkbtype = joinlayer.wkbType()
             joinlayerwkbtext = self.getwkbtext(joinwkbtype)
             self.joingeometrytypelabel.setText(joinlayerwkbtext)
-        # Enable the OK button (if layers are OK)
-        if inputlayer is not None and joinlayer is not None:
-            self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         # Check the coordinate systems
-        # Geographic? - give a warning!
-        #if joinlayer is not None and joinlayer.crs().geographicFlag():
-        #    self.showWarning('Geographic CRS used for the join layer -'
-        #                     ' distances will be in decimal degrees!')
         # Different CRSs? - give a warning!
         if (inputlayer is not None and joinlayer is not None and
                 inputlayer.crs() != joinlayer.crs()):
-            self.showWarning('Layers have different CRS! - Input CRS authid: ' +
-                             str(inputlayer.crs().authid()) +
-                             ' - Join CRS authid: ' +
-                             str(joinlayer.crs().authid()))
+            self.showWarning(
+                  'Layers have different CRS! - Input CRS authid: ' +
+                  str(inputlayer.crs().authid()) +
+                  ' - Join CRS authid: ' +
+                  str(joinlayer.crs().authid()) +
+                  ".  The input layer will be transformed.")
         self.updateui()
         # end of layerchanged
 
@@ -300,9 +306,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # the comboboxes should be updated to include the new
         # possibilities.
         self.layerlistchanging = True
-        self.inputVectorLayer.clear()
-        self.joinVectorLayer.clear()
-#        self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         # Repopulate the input and join layer combo boxes
         # Save the currently selected input layer
         inputlayerid = self.inputlayerid
@@ -316,20 +319,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                         'Layer ' + layers[id].name() + ' is not valid')
                 if layers[id].wkbType() != QGis.WKBNoGeometry:
                     layerslist.append((layers[id].name(), id))
-        # If no vector layers - exit
-        if len(layerslist) == 0 or len(layers) == 0:
-            self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
-            #QMessageBox.information(None,
-            #   self.tr('Information'),
-            #   self.tr('Vector layers not found'))
-            #return
-            #self.reject()
-        else:
-            if not self.button_box.button(QDialogButtonBox.Ok).isEnabled():
-                self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
-        # Add the layers to the layers combobox
-        #self.inputVectorLayer.clear()
-        #self.dlg.inputVectorLayer.clear()
+        # Add the layers to the input layers combobox
+        self.inputVectorLayer.clear()
         for layerdescription in layerslist:
             self.inputVectorLayer.addItem(layerdescription[0],
                                         layerdescription[1])
@@ -339,6 +330,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.inputVectorLayer.setCurrentIndex(i)
         # Save the currently selected join layer
         joinlayerid = self.joinlayerid
+        # Add the layers to the join layers combobox
         self.joinVectorLayer.clear()
         for layerdescription in layerslist:
             self.joinVectorLayer.addItem(layerdescription[0],
@@ -356,14 +348,20 @@ class NNJoinDialog(QDialog, FORM_CLASS):
            been changed."""
         #if self.layerlistchanged:
         #    return
+        # Update the output dataset name
         self.outputDataset.setText(self.inputVectorLayer.currentText() +
                                    '_' + self.joinVectorLayer.currentText())
+        # Retrieve the input layer
         layerindex = self.inputVectorLayer.currentIndex()
         layerId = self.inputVectorLayer.itemData(layerindex)
         inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+        # Retrieve the join layer
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        # Enable the OK button (if layers are OK)
+        if inputlayer is not None and joinlayer is not None:
+            self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
         # Check the geometry type of the input layer and set
         # user interface options accordingly
         if inputlayer is not None:
@@ -430,10 +428,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.use_indexapprox_cb.setCheckState(Qt.Unchecked)
                 self.use_indexapprox_cb.setVisible(False)
                 self.use_indexapprox_cb.blockSignals(False)
+            # Set the default background (white) for the distance field name
+            self.distancefieldname.setStyleSheet("background:#fff;")
             # Check if the distance field name already is used
             inputfields = inputlayer.pendingFields().toList()
-            #self.showInfo("Input fields: " + str(inputfields[0].name()))
-            self.distancefieldname.setStyleSheet("background:#fff;")
             for infield in inputfields:
                 if infield.name() == self.distancefieldname.text():
                     self.distancefieldname.setStyleSheet("background:#f00;")
@@ -443,6 +441,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                          QDialogButtonBox.Ok).isEnabled():
                         self.button_box.button(
                                    QDialogButtonBox.Ok).setEnabled(False)
+                    break
             if joinlayer is not None:
                 joinfields = joinlayer.pendingFields().toList()
                 for joinfield in joinfields:
@@ -456,6 +455,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                           QDialogButtonBox.Ok).isEnabled():
                             self.button_box.button(
                                     QDialogButtonBox.Ok).setEnabled(False)
+                        break
         else:
             # No input layer defined, so options are disabled
             self.approximate_input_geom_cb.setVisible(False)
@@ -501,8 +501,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         """Kill the worker thread."""
         if self.worker is not None:
             self.showInfo(self.tr('Killing worker'))
-            #QgsMessageLog.logMessage(self.tr('Killing worker'),
-            #                         self.NNJOIN, QgsMessageLog.INFO)
             self.worker.kill()
 
     def showError(self, text):

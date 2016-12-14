@@ -44,16 +44,18 @@ class Worker(QtCore.QObject):
     /* QGIS offers spatial indexes to make spatial search more
      * effective.  QgsSpatialIndex will find the nearest index
      * (approximate) geometry (rectangle) for a supplied point.
-     * QgsSpatialIndex will give correct results when searching
+     * QgsSpatialIndex will only give correct results when searching
      * for the nearest neighbour of a point in a point data set.
      * So something has to be done for non-point data sets
      *
      * Non-point join data set:
      * A two pass search is performed.  First the index is used to
      * find the nearest index geometry (approximation - rectangle),
-     * and then compute the actual distance to this geometry.
-     * Then this rectangle is used to find all features in the join
-     * data set that may be the closest feature to the given point.
+     * and then compute the distance to the actual indexed geometry.
+     * A rectangle is constructed from this (maximum minimum)
+     * distance, and this rectangle is used to find all features in
+     * the join data set that may be the closest feature to the given
+     * point.
      * For all the features is this candidate set, the actual
      * distance to the given point is calculated, and the nearest
      * feature is returned.
@@ -79,14 +81,15 @@ class Worker(QtCore.QObject):
     progress = QtCore.pyqtSignal(float)  # For reporting progress
     status = QtCore.pyqtSignal(str)      # For reporting status
     error = QtCore.pyqtSignal(str)       # For reporting errors
-    #killed = QtCore.pyqtSignal()
     # Signal for sending over the result:
     finished = QtCore.pyqtSignal(bool, object)
 
     def __init__(self, inputvectorlayer, joinvectorlayer,
-                 outputlayername, approximateinputgeom, joinprefix,
-                 usejoinlayerapproximation, usejoinlayerindex,
-                 distancefieldname):
+                 outputlayername, joinprefix,
+                 distancefieldname="distance",
+                 approximateinputgeom=False,
+                 usejoinlayerapproximation=False,
+                 usejoinlayerindex=True):
         """Initialise.
 
         Arguments:
@@ -95,33 +98,30 @@ class Worker(QtCore.QObject):
         joinvectorlayer -- (QgsVectorLayer) the join layer
         outputlayername -- (string) the name of the output memory
                            layer
+        joinprefix -- (string) the prefix to use for the join layer
+                      attributes in the output layer
+        distancefieldname -- name of the (new) field where neighbour
+                             distance is stored
         approximateinputgeom -- (boolean) should the input geometry
                                 be approximated?  Is only be set for
                                 non-single-point layers
-        joinprefix -- (string) the prefix to use for the join layer
-                      attributes in the output layer
         usejoinlayerindexapproximation -- (boolean) should the index
                              geometry approximations be used for the
                              join?
         usejoinlayerindex -- (boolean) should an index for the join
-                             layer be used.  Will only use the index
-                             geometry approximations for the join
-        distancefieldname -- name of field where neighbour distance
-                             is stored
+                             layer be used.
         """
 
+        QtCore.QObject.__init__(self)  # Essential!
         # Set a variable to control the use of indexes and exact
         # geometries for non-point input geometries
-        #self.nonpointexactindex = True
         self.nonpointexactindex = usejoinlayerindex
-
-        QtCore.QObject.__init__(self)  # Essential!
         # Creating instance variables from the parameters
         self.inpvl = inputvectorlayer
         self.joinvl = joinvectorlayer
         self.outputlayername = outputlayername
-        self.approximateinputgeom = approximateinputgeom
         self.joinprefix = joinprefix
+        self.approximateinputgeom = approximateinputgeom
         self.usejoinlayerapprox = usejoinlayerapproximation
         # Check if the layers are the same (self join)
         self.selfjoin = False
@@ -129,7 +129,6 @@ class Worker(QtCore.QObject):
             # This is a self join
             self.selfjoin = True
         # The name of the attribute for the calculated distance
-        #self.distancename = "distance"
         self.distancename = distancefieldname
         # Creating instance variables for the progress bar ++
         # Number of elements that have been processed - updated by
@@ -153,11 +152,8 @@ class Worker(QtCore.QObject):
                 self.status.emit('Layer is missing!')
                 self.finished.emit(False, None)
                 return
-            #self.status.emit('Started!')
             # Check the geometry type and prepare the output layer
             geometryType = self.inpvl.geometryType()
-            #self.status.emit('Input layer geometry type: ' +
-            #                               str(geometryType))
             geometrytypetext = 'Point'
             if geometryType == QGis.Point:
                 geometrytypetext = 'Point'
@@ -171,13 +167,10 @@ class Worker(QtCore.QObject):
             self.inputmulti = False
             feats = self.inpvl.getFeatures()
             if feats is not None:
-                #self.status.emit('#Input features: ' + str(feats))
                 testfeature = feats.next()
                 feats.rewind()
                 feats.close()
                 if testfeature is not None:
-                    #self.status.emit('Input feature geometry: ' +
-                    #                 str(testfeature.geometry()))
                     if testfeature.geometry() is not None:
                         if testfeature.geometry().isMultipart():
                             self.inputmulti = True
@@ -196,14 +189,15 @@ class Worker(QtCore.QObject):
                 self.status.emit('getFeatures returns None for input layer!')
                 self.finished.emit(False, None)
                 return
-            geomptext = geometrytypetext
+            geomttext = geometrytypetext
             # Set the coordinate reference system to the input
-            # layer's CRS
+            # layer's CRS using authid (proj4 may be more robust)
             if self.inpvl.crs() is not None:
-                geomptext = (geomptext + "?crs=" +
+                geomttext = (geomttext + "?crs=" +
                              str(self.inpvl.crs().authid()))
+            # Retrieve the fields from the input layer
             outfields = self.inpvl.pendingFields().toList()
-            #
+            # Retrieve the fields from the join layer
             if self.joinvl.pendingFields() is not None:
                 jfields = self.joinvl.pendingFields().toList()
                 for joinfield in jfields:
@@ -212,28 +206,29 @@ class Worker(QtCore.QObject):
                                      joinfield.type()))
             else:
                 self.status.emit('Unable to get any join layer fields')
-                #self.finished.emit(False, None)
-                #return
-
-            # Check if there is already a "distance" attribute
-            # (should not be avoided in the user interface)
+            # Add the nearest neighbour distance field
+            # Check if there is already a "distance" field
+            # (should be avoided in the user interface)
+            # Try a new name if there is a collission
             collission = True
             while collission:   # Iterate until there are no collissions
                 collission = False
                 for field in outfields:
                     if field.name() == self.distancename:
+                        self.status.emit(
+                              'Distance field already exists - renaming!')
                         #self.abort = True
-                        #self.status.emit('Distance field already exists!')
                         #self.finished.emit(False, None)
                         #break
                         collission = True
                         self.distancename = self.distancename + '1'
             outfields.append(QgsField(self.distancename, QVariant.Double))
             # Create a memory layer
-            self.mem_joinl = QgsVectorLayer(geomptext,
+            self.mem_joinl = QgsVectorLayer(geomttext,
                                             self.outputlayername,
                                             "memory")
             self.mem_joinl.startEditing()
+            # Add the fields
             for field in outfields:
                 self.mem_joinl.dataProvider().addAttributes([field])
             # For an index to be used, the input layer has to be a
@@ -276,25 +271,16 @@ class Worker(QtCore.QObject):
                     self.status.emit('No join features!')
                     self.finished.emit(False, None)
                     return
-
-            #if feats.next().geometry().isMultipart():
-            #    self.joinmulti = True
-            #feats.rewind()
-            #feats.close()
-
             # Prepare for the join by fetching the layers into memory
             # Add the input features to a list
-            inputfeatures = self.inpvl.getFeatures()
             self.inputf = []
-            for f in inputfeatures:
+            for f in self.inpvl.getFeatures():
                 self.inputf.append(f)
             # Add the join features to a list
-            joinfeatures = self.joinvl.getFeatures()
             self.joinf = []
-            for f in joinfeatures:
+            for f in self.joinvl.getFeatures():
                 self.joinf.append(f)
             self.features = []
-
             # Do the join!
             # Using the original features from the input layer
             for feat in self.inputf:
@@ -341,7 +327,9 @@ class Worker(QtCore.QObject):
                            sought
         '''
         infeature = feat
+        # Get the feature ID
         infeatureid = infeature.id()
+        # Get the feature geometry
         inputgeom = QgsGeometry(infeature.geometry())
         # Shall approximate input geometries be used?
         if self.approximateinputgeom:
@@ -359,21 +347,19 @@ class Worker(QtCore.QObject):
                                 ' - ' + traceback.format_exc())
                 self.abort = True
                 return
+        ## Find the closest feature!
         nnfeature = None
         mindist = float("inf")
-        ## Find the closest feature!
         if (self.approximateinputgeom or
                 self.inpvl.wkbType() == QGis.WKBPoint or
                 self.inpvl.wkbType() == QGis.WKBPoint25D):
-            # The input layer's geometry type is point, or shall be
+            # The input layer's geometry type is point, or has been
             # approximated to point (centroid).
             # Then a join index will always be used.
             if (self.usejoinlayerapprox or
                     self.joinvl.wkbType() == QGis.WKBPoint or
                     self.joinvl.wkbType() == QGis.WKBPoint25D):
-                # The join layer's geometry type is point, or the
-                # user wants approximate join geometries to be used.
-                # Then the join index nearest neighbour function can
+                # The join index nearest neighbour function can
                 # be used without refinement.
                 if self.selfjoin:
                     # Self join!
@@ -390,13 +376,6 @@ class Worker(QtCore.QObject):
                         # input feature, so choose it
                         nnfeature = self.joinvl.getFeatures(
                             QgsFeatureRequest(nearestids[0])).next()
-                    ## Pick the second closest neighbour!
-                    ## (the first is supposed to be the point itself)
-                    ## Should we check for coinciding points?
-                    #nearestid = self.joinlind.nearestNeighbor(
-                    #    inputgeom.asPoint(), 2)[1]
-                    #nnfeature = self.joinvl.getFeatures(
-                    #    QgsFeatureRequest(nearestid)).next()
                 else:
                     # Not a self join, so we can search for only the
                     # nearest neighbour (1)
@@ -417,7 +396,7 @@ class Worker(QtCore.QObject):
                     inputgeom.asPoint(), 1)[0]
                 # Check for self join
                 if self.selfjoin and nearestindexid == infeatureid:
-                    # Self join and same feature, so get the two
+                    # Self join and same feature, so get the
                     # first two neighbours
                     nearestindexes = self.joinlind.nearestNeighbor(
                                              inputgeom.asPoint(), 2)
@@ -540,19 +519,21 @@ class Worker(QtCore.QObject):
                     if mindist == 0:
                         break
         if not self.abort:
+            # Collect the attribute
             atMapA = infeature.attributes()
             atMapB = nnfeature.attributes()
             attrs = []
             attrs.extend(atMapA)
             attrs.extend(atMapB)
             attrs.append(mindist)
-
+            # Create the feature
             outFeat = QgsFeature()
             # Use the original input layer geometry!:
             outFeat.setGeometry(QgsGeometry(infeature.geometry()))
             # Use the modified input layer geometry (could be
             # centroid)
             #outFeat.setGeometry(QgsGeometry(inputgeom))
+            # Add the attributes
             outFeat.setAttributes(attrs)
             self.calculate_progress()
             self.features.append(outFeat)
