@@ -74,7 +74,6 @@ class NNJoin(object):
                 QCoreApplication.installTranslator(self.translator)
 
         # Declare instance attributes
-        #self.actions = []
         self.NNJOIN = self.tr('NNJoin')
         self.NNJOINAMP = self.tr('&NNJoin')
         self.toolbar = None
@@ -99,7 +98,7 @@ class NNJoin(object):
 
     def initGui(self):
         # Create action that will start plugin configuration
-        icon_path = ':/plugins/NNJoin/nnjoin.png'
+        icon_path = os.path.join(os.path.dirname(__file__), "nnjoin.png")
         self.action = QAction(
             QIcon(icon_path),
             self.NNJOIN, self.iface.mainWindow())
