@@ -97,7 +97,7 @@ class NNJoin(object):
         return QCoreApplication.translate('NNJoin', message)
 
     def initGui(self):
-        # Create action that will start plugin configuration
+        """Create the menu entries and toolbar icons inside the QGIS GUI"""
         icon_path = os.path.join(os.path.dirname(__file__), "nnjoin.png")
         self.action = QAction(
             QIcon(icon_path),
