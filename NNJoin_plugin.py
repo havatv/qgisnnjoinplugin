@@ -24,6 +24,7 @@ import os.path
 # QGIS imports
 from qgis.core import QgsMapLayerRegistry, QgsMapLayer
 from qgis.core import QGis
+#from qgis.core import QgsWkbTypes
 #import processing
 
 #QGIS 3
