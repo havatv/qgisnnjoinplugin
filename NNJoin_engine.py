@@ -165,7 +165,7 @@ class Worker(QtCore.QObject):
             self.inputmulti = False
             feats = self.inpvl.getFeatures()
             if feats is not None:
-                testfeature = feats.next()
+                testfeature = next(feats)
                 feats.rewind()
                 feats.close()
                 if testfeature is not None:
@@ -254,7 +254,7 @@ class Worker(QtCore.QObject):
             self.joinmulti = False
             feats = self.joinvl.getFeatures()
             if feats is not None:
-                testfeature = feats.next()
+                testfeature = next(feats)
                 feats.rewind()
                 feats.close()
                 if testfeature is not None:
@@ -367,20 +367,20 @@ class Worker(QtCore.QObject):
                     if nearestids[0] == infeatureid and len(nearestids) > 1:
                         # The first feature is the same as the input
                         # feature, so choose the second one
-                        nnfeature = self.joinvl.getFeatures(
-                            QgsFeatureRequest(nearestids[1])).next()
+                        nnfeature = next(self.joinvl.getFeatures(
+                            QgsFeatureRequest(nearestids[1])))
                     else:
                         # The first feature is not the same as the
                         # input feature, so choose it
-                        nnfeature = self.joinvl.getFeatures(
-                            QgsFeatureRequest(nearestids[0])).next()
+                        nnfeature = next(self.joinvl.getFeatures(
+                            QgsFeatureRequest(nearestids[0])))
                 else:
                     # Not a self join, so we can search for only the
                     # nearest neighbour (1)
                     nearestid = self.joinlind.nearestNeighbor(
                                            inputgeom.asPoint(), 1)[0]
-                    nnfeature = self.joinvl.getFeatures(
-                                 QgsFeatureRequest(nearestid)).next()
+                    nnfeature = next(self.joinvl.getFeatures(
+                                 QgsFeatureRequest(nearestid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
             elif (self.joinvl.wkbType() == QGis.WKBPolygon or
                   self.joinvl.wkbType() == QGis.WKBPolygon25D or
@@ -402,8 +402,8 @@ class Worker(QtCore.QObject):
                     if (nearestindexid == infeatureid and
                                   len(nearestindexes) > 1):
                         nearestindexid = nearestindexes[1]
-                nnfeature = self.joinvl.getFeatures(
-                    QgsFeatureRequest(nearestindexid)).next()
+                nnfeature = next(self.joinvl.getFeatures(
+                    QgsFeatureRequest(nearestindexid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
                 px = inputgeom.asPoint().x()
                 py = inputgeom.asPoint().y()
@@ -418,8 +418,8 @@ class Worker(QtCore.QObject):
                     # Check for self join and same feature
                     if self.selfjoin and closefid == infeatureid:
                         continue
-                    closef = self.joinvl.getFeatures(
-                        QgsFeatureRequest(closefid)).next()
+                    closef = next(self.joinvl.getFeatures(
+                        QgsFeatureRequest(closefid)))
                     thisdistance = inputgeom.distance(closef.geometry())
                     if thisdistance < mindist:
                         mindist = thisdistance
@@ -464,8 +464,8 @@ class Worker(QtCore.QObject):
                     nearestid = nearestindexes[0]
                     if nearestid == infeatureid and len(nearestindexes) > 1:
                         nearestid = nearestindexes[1]
-                nnfeature = self.joinvl.getFeatures(
-                    QgsFeatureRequest(nearestid)).next()
+                nnfeature = next(self.joinvl.getFeatures(
+                    QgsFeatureRequest(nearestid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
                 # Calculate the search rectangle (inputgeom BBOX
                 inpbbox = infeature.geometry().boundingBox()
@@ -488,8 +488,8 @@ class Worker(QtCore.QObject):
                     # Check for self join and identical feature
                     if self.selfjoin and closefid == infeatureid:
                         continue
-                    closef = self.joinvl.getFeatures(
-                        QgsFeatureRequest(closefid)).next()
+                    closef = next(self.joinvl.getFeatures(
+                        QgsFeatureRequest(closefid)))
                     thisdistance = inputgeom.distance(closef.geometry())
                     if thisdistance < mindist:
                         mindist = thisdistance

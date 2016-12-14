@@ -38,6 +38,8 @@ from PyQt4.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
 from PyQt4.QtGui import QAction, QMessageBox, QIcon
 
 # Plugin imports
+import sys
+sys.path.append(os.path.dirname(__file__))
 import resources_rc
 from .NNJoin_gui import NNJoinDialog
 
@@ -72,10 +74,9 @@ class NNJoin(object):
                 QCoreApplication.installTranslator(self.translator)
 
         # Declare instance attributes
-        self.actions = []
+        #self.actions = []
         self.NNJOIN = self.tr('NNJoin')
         self.NNJOINAMP = self.tr('&NNJoin')
-        self.menuname = self.NNJOIN
         self.toolbar = None
         # Separate toolbar for NNJoin:
         #self.toolbar = self.iface.addToolBar(self.NNJOIN)
@@ -96,119 +97,37 @@ class NNJoin(object):
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('NNJoin', message)
 
-    def add_action(self,
-                   icon_path,
-                   text,
-                   callback,
-                   enabled_flag=True,
-                   add_to_menu=True,
-                   add_to_toolbar=True,
-                   status_tip=None,
-                   whats_this=None,
-                   parent=None):
-        """Add a toolbar icon to the InaSAFE toolbar.
-
-        :param icon_path: Path to the icon for this action. Can be a resource
-            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
-        :type icon_path: str
-
-        :param text: Text that should be shown in menu items for this action.
-        :type text: str
-
-        :param callback: Function to be called when the action is triggered.
-        :type callback: function
-
-        :param enabled_flag: A flag indicating if the action should be enabled
-            by default. Defaults to True.
-        :type enabled_flag: bool
-
-        :param add_to_menu: Flag indicating whether the action should also
-            be added to the menu. Defaults to True.
-        :type add_to_menu: bool
-
-        :param add_to_toolbar: Flag indicating whether the action should also
-            be added to the toolbar. Defaults to True.
-        :type add_to_toolbar: bool
-
-        :param status_tip: Optional text to show in a popup when mouse pointer
-            hovers over the action.
-        :type status_tip: str
-
-        :param parent: Parent widget for the new action. Defaults None.
-        :type parent: QWidget
-
-        :param whats_this: Optional text to show in the status bar when the
-            mouse pointer hovers over the action.
-
-        :returns: The action that was created. Note that the action is also
-            added to self.actions list.
-        :rtype: QAction
-        """
-
-        icon = QIcon(icon_path)
-        action = QAction(icon, text, parent)
-        action.triggered.connect(callback)
-        action.setEnabled(enabled_flag)
-
-        if status_tip is not None:
-            action.setStatusTip(status_tip)
-
-        if whats_this is not None:
-            action.setWhatsThis(whats_this)
-
-        if add_to_toolbar and self.toolbar is not None:
-            self.toolbar.addAction(action)
-
-        if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menuname,
-                action)
-
-        # Add the plugin to the plugins toolbar of QGIS
-        #self.iface.addToolBarIcon(action)
-        # Add the plugin to the vector toolbar of QGIS
-        #self.iface.addVectorToolBarIcon(action)
-        # Add the plugin to a QGIS toolbar
-        if hasattr(self.iface, 'addVectorToolBarIcon'):
-            self.iface.addVectorToolBarIcon(action)
-        else:
-            self.iface.addToolBarIcon(action)
-        # Add the plugin to the a QGIS menu
-        #self.iface.addPluginToVectorMenu(self.NNJOINAMP, action)
-        if hasattr(self.iface, 'addPluginToVectorMenu'):
-            self.iface.addPluginToVectorMenu(self.NNJOINAMP, action)
-        else:
-            self.iface.addPluginToMenu(self.NNJOINAMP, action)
-        self.actions.append(action)
-
     def initGui(self):
-        """Create the menu entries and toolbar icons inside the QGIS GUI."""
+        # Create action that will start plugin configuration
         icon_path = ':/plugins/NNJoin/nnjoin.png'
-        self.add_action(
-            icon_path,
-            text=self.NNJOIN,
-            callback=self.run,
-            parent=self.iface.mainWindow())
+        self.action = QAction(
+            QIcon(icon_path),
+            self.NNJOIN, self.iface.mainWindow())
+        # connect the action to the run method
+        self.action.triggered.connect(self.run)
+        # Add toolbar button
+        if hasattr(self.iface, 'addVectorToolBarIcon'):
+            self.iface.addVectorToolBarIcon(self.action)
+        else:
+            self.iface.addToolBarIcon(self.action)
+        # Add menu item
+        if hasattr(self.iface, 'addPluginToVectorMenu'):
+            self.iface.addPluginToVectorMenu(self.NNJOINAMP, self.action)
+        else:
+            self.iface.addPluginToMenu(self.NNJOINAMP, self.action)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-        for action in self.actions:
-            self.iface.removePluginMenu(
-                self.menuname,
-                action)
-            #self.iface.removePluginVectorMenu(self.NNJOINAMP, action)
-            # Remove the plugin menu item
-            if hasattr(self.iface, 'removePluginVectorMenu'):
-                self.iface.removePluginVectorMenu(self.NNJOINAMP, action)
-            else:
-                self.iface.removePluginMenu(self.NNJOINAMP, action)
-            #self.iface.removeVectorToolBarIcon(action)
-            #self.iface.removeToolBarIcon(action)
-            # Remove the plugin toolbar icon
-            if hasattr(self.iface, 'removeVectorToolBarIcon'):
-                self.iface.removeVectorToolBarIcon(action)
-            else:
-                self.iface.removeToolBarIcon(action)
+        # Remove the plugin menu item
+        if hasattr(self.iface, 'removePluginVectorMenu'):
+            self.iface.removePluginVectorMenu(self.NNJOINAMP, self.action)
+        else:
+            self.iface.removePluginMenu(self.NNJOINAMP, self.action)
+        # Remove the plugin toolbar icon
+        if hasattr(self.iface, 'removeVectorToolBarIcon'):
+            self.iface.removeVectorToolBarIcon(self.action)
+        else:
+            self.iface.removeToolBarIcon(self.action)
 
     def run(self):
         """Run method that initialises and starts the user interface"""
