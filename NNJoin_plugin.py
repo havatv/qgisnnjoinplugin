@@ -117,7 +117,7 @@ class NNJoin(object):
             self.iface.addPluginToMenu(self.NNJOINAMP, self.nnj_action)
 
     def unload(self):
-        """Removes the plugin menu item and icon from QGIS GUI."""
+        """Removes the plugin menu item and icon from QGIS GUI"""
         # Remove the plugin menu item
         if hasattr(self.iface, 'removePluginVectorMenu'):
             self.iface.removePluginVectorMenu(self.NNJOINAMP, self.nnj_action)
