@@ -376,7 +376,6 @@ class Worker(QtCore.QObject):
             # Calculate percentage as integer
             perc_new = (self.processed * 100) / self.feature_count
             if perc_new > self.percentage:
-                #self.status.emit("Percentage: " + str(perc_new))
                 self.percentage = perc_new
                 self.progress.emit(self.percentage)
 
