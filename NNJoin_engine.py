@@ -77,6 +77,7 @@ class Worker(QtCore.QObject):
     '''
     # Define the signals used to communicate back to the application
     progress = QtCore.pyqtSignal(float)  # For reporting progress
+    progressreset = QtCore.pyqtSignal(bool)  # Resetting progress bar
     status = QtCore.pyqtSignal(str)      # For reporting status
     error = QtCore.pyqtSignal(str)       # For reporting errors
     # Signal for sending over the result:
@@ -87,7 +88,9 @@ class Worker(QtCore.QObject):
                  distancefieldname="distance",
                  approximateinputgeom=False,
                  usejoinlayerapproximation=False,
-                 usejoinlayerindex=True):
+                 usejoinlayerindex=True,
+                 selectedinputonly=True,
+                 selectedjoinonly=True):
         """Initialise.
 
         Arguments:
@@ -121,6 +124,8 @@ class Worker(QtCore.QObject):
         self.joinprefix = joinprefix
         self.approximateinputgeom = approximateinputgeom
         self.usejoinlayerapprox = usejoinlayerapproximation
+        self.selectedinonly = selectedinputonly
+        self.selectedjoonly = selectedjoinonly
         # Check if the layers are the same (self join)
         self.selfjoin = False
         if self.inpvl is self.joinvl:
@@ -138,11 +143,11 @@ class Worker(QtCore.QObject):
         # Flag set by kill(), checked in the loop
         self.abort = False
         # Number of features in the input layer - used by
-        # calculate_progress
-        self.feature_count = self.inpvl.featureCount()
+        # calculate_progress (set when needed)
+        self.feature_count = 1
         # The number of elements that is needed to increment the
-        # progressbar - set early in run()
-        self.increment = self.feature_count // 1000
+        # progressbar (set when needed)
+        self.increment = 0
 
     def run(self):
         try:
@@ -150,6 +155,7 @@ class Worker(QtCore.QObject):
                 self.status.emit('Layer is missing!')
                 self.finished.emit(False, None)
                 return
+            self.status.emit('Feature count: ' + str(self.feature_count))
             # Check the geometry type and prepare the output layer
             geometryType = self.inpvl.geometryType()
             geometrytypetext = 'Point'
@@ -163,7 +169,10 @@ class Worker(QtCore.QObject):
             # Try to check the first feature
             # This is not used for anything yet
             self.inputmulti = False
-            feats = self.inpvl.getFeatures()
+            if self.selectedinonly:
+                feats = self.inpvl.selectedFeaturesIterator()
+            else:
+                feats = self.inpvl.getFeatures()
             if feats is not None:
                 testfeature = next(feats)
                 feats.rewind()
@@ -241,18 +250,50 @@ class Worker(QtCore.QObject):
                     self.nonpointexactindex):
                 # Create a spatial index to speed up joining
                 self.status.emit('Creating join layer index...')
+
+
+                # Number of features in the input layer - used by
+                # calculate_progress
+                if self.selectedjoonly:
+                    self.feature_count = self.joinvl.selectedFeatureCount()
+                else:
+                    self.feature_count = self.joinvl.featureCount()
+                # The number of elements that is needed to increment the
+                # progressbar - set early in run()
+                self.increment = self.feature_count // 1000
+
+
+
+
+
                 self.joinlind = QgsSpatialIndex()
-                for feat in self.joinvl.getFeatures():
-                    # Allow user abort
-                    if self.abort is True:
-                        break
-                    self.joinlind.insertFeature(feat)
+                if self.selectedjoonly:
+                    for feat in self.joinvl.selectedFeaturesIterator():
+                        # Allow user abort
+                        if self.abort is True:
+                            break
+                        self.joinlind.insertFeature(feat)
+                        self.calculate_progress()
+                else:
+                    for feat in self.joinvl.getFeatures():
+                        # Allow user abort
+                        if self.abort is True:
+                            break
+                        self.joinlind.insertFeature(feat)
+                        self.calculate_progress()
+                #self.progressreset.emit(True)
                 self.status.emit('Join layer index created!')
+                self.processed = 0
+                self.percentage = 0
+                #self.calculate_progress()
             # Does the join layer contain multi geometries?
             # Try to check the first feature
             # This is not used for anything yet
             self.joinmulti = False
-            feats = self.joinvl.getFeatures()
+            if self.selectedjoonly:
+                feats = self.joinvl.selectedFeaturesIterator()
+            else:
+                feats = self.joinvl.getFeatures()
             if feats is not None:
                 testfeature = next(feats)
                 feats.rewind()
@@ -272,14 +313,38 @@ class Worker(QtCore.QObject):
             # Prepare for the join by fetching the layers into memory
             # Add the input features to a list
             self.inputf = []
-            for f in self.inpvl.getFeatures():
-                self.inputf.append(f)
+            if self.selectedinonly:
+                for f in self.inpvl.selectedFeaturesIterator():
+                    self.inputf.append(f)
+            else:
+                for f in self.inpvl.getFeatures():
+                    self.inputf.append(f)
             # Add the join features to a list
             self.joinf = []
-            for f in self.joinvl.getFeatures():
-                self.joinf.append(f)
+            if self.selectedjoonly:
+                for f in self.joinvl.selectedFeaturesIterator():
+                    self.joinf.append(f)
+            else:
+                for f in self.joinvl.getFeatures():
+                    self.joinf.append(f)
             self.features = []
             # Do the join!
+
+
+            # Number of features in the input layer - used by
+            # calculate_progress
+            if self.selectedinonly:
+                self.feature_count = self.inpvl.selectedFeatureCount()
+            else:
+                self.feature_count = self.inpvl.featureCount()
+            # The number of elements that is needed to increment the
+            # progressbar - set early in run()
+            self.increment = self.feature_count // 1000
+
+
+
+
+
             # Using the original features from the input layer
             for feat in self.inputf:
                 # Allow user abort
@@ -309,8 +374,10 @@ class Worker(QtCore.QObject):
         # update the progress bar at certain increments
         if (self.increment == 0 or
                 self.processed % self.increment == 0):
+            # Calculate percentage as integer
             perc_new = (self.processed * 100) / self.feature_count
             if perc_new > self.percentage:
+                #self.status.emit("Percentage: " + str(perc_new))
                 self.percentage = perc_new
                 self.progress.emit(self.percentage)
 
@@ -367,19 +434,31 @@ class Worker(QtCore.QObject):
                     if nearestids[0] == infeatureid and len(nearestids) > 1:
                         # The first feature is the same as the input
                         # feature, so choose the second one
-                        nnfeature = next(self.joinvl.getFeatures(
-                            QgsFeatureRequest(nearestids[1])))
+                        if self.selectedjoonly:
+                            nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                                QgsFeatureRequest(nearestids[1])))
+                        else:
+                            nnfeature = next(self.joinvl.getFeatures(
+                                QgsFeatureRequest(nearestids[1])))
                     else:
                         # The first feature is not the same as the
                         # input feature, so choose it
-                        nnfeature = next(self.joinvl.getFeatures(
-                            QgsFeatureRequest(nearestids[0])))
+                        if self.selectedjoonly:
+                            nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                                QgsFeatureRequest(nearestids[0])))
+                        else:
+                            nnfeature = next(self.joinvl.getFeatures(
+                                QgsFeatureRequest(nearestids[0])))
                 else:
                     # Not a self join, so we can search for only the
                     # nearest neighbour (1)
                     nearestid = self.joinlind.nearestNeighbor(
                                            inputgeom.asPoint(), 1)[0]
-                    nnfeature = next(self.joinvl.getFeatures(
+                    if self.selectedjoonly:
+                        nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                                 QgsFeatureRequest(nearestid)))
+                    else:
+                        nnfeature = next(self.joinvl.getFeatures(
                                  QgsFeatureRequest(nearestid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
             elif (self.joinvl.wkbType() == QGis.WKBPolygon or
@@ -402,8 +481,12 @@ class Worker(QtCore.QObject):
                     if (nearestindexid == infeatureid and
                                   len(nearestindexes) > 1):
                         nearestindexid = nearestindexes[1]
-                nnfeature = next(self.joinvl.getFeatures(
-                    QgsFeatureRequest(nearestindexid)))
+                if self.selectedjoonly:
+                    nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                        QgsFeatureRequest(nearestindexid)))
+                else:
+                    nnfeature = next(self.joinvl.getFeatures(
+                        QgsFeatureRequest(nearestindexid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
                 px = inputgeom.asPoint().x()
                 py = inputgeom.asPoint().y()
@@ -418,8 +501,12 @@ class Worker(QtCore.QObject):
                     # Check for self join and same feature
                     if self.selfjoin and closefid == infeatureid:
                         continue
-                    closef = next(self.joinvl.getFeatures(
-                        QgsFeatureRequest(closefid)))
+                    if self.selectedjoonly:
+                        closef = next(self.joinvl.selectedFeaturesIterator(
+                            QgsFeatureRequest(closefid)))
+                    else:
+                        closef = next(self.joinvl.getFeatures(
+                            QgsFeatureRequest(closefid)))
                     thisdistance = inputgeom.distance(closef.geometry())
                     if thisdistance < mindist:
                         mindist = thisdistance
@@ -464,8 +551,12 @@ class Worker(QtCore.QObject):
                     nearestid = nearestindexes[0]
                     if nearestid == infeatureid and len(nearestindexes) > 1:
                         nearestid = nearestindexes[1]
-                nnfeature = next(self.joinvl.getFeatures(
-                    QgsFeatureRequest(nearestid)))
+                if self.selectedjoonly:
+                    nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                        QgsFeatureRequest(nearestid)))
+                else:
+                    nnfeature = next(self.joinvl.getFeatures(
+                        QgsFeatureRequest(nearestid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
                 # Calculate the search rectangle (inputgeom BBOX
                 inpbbox = infeature.geometry().boundingBox()
@@ -488,8 +579,12 @@ class Worker(QtCore.QObject):
                     # Check for self join and identical feature
                     if self.selfjoin and closefid == infeatureid:
                         continue
-                    closef = next(self.joinvl.getFeatures(
-                        QgsFeatureRequest(closefid)))
+                    if self.selectedjoonly:
+                        closef = next(self.joinvl.selectedFeaturesIterator(
+                            QgsFeatureRequest(closefid)))
+                    else:
+                        closef = next(self.joinvl.getFeatures(
+                            QgsFeatureRequest(closefid)))
                     thisdistance = inputgeom.distance(closef.geometry())
                     if thisdistance < mindist:
                         mindist = thisdistance

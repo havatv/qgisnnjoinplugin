@@ -84,6 +84,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="inputSelected">
+           <property name="text">
+            <string>Selected only</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -159,6 +166,13 @@
            </property>
            <property name="text">
             <string>Unknown</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="joinSelected">
+           <property name="text">
+            <string>Selected only</string>
            </property>
           </widget>
          </item>
