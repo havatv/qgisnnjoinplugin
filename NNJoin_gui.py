@@ -179,8 +179,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             worker.status.connect(self.workerInfo)
             worker.progress.connect(self.progressBar.setValue)
             worker.progress.connect(self.aprogressBar.setValue)
-            worker.progressreset.connect(self.progressbarReset)
-            #worker.progressreset.connect(self.aprogressBar.reset)
             thread.started.connect(worker.run)
             thread.start()
             self.thread = thread
@@ -229,13 +227,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         self.button_box.button(QDialogButtonBox.Close).setEnabled(True)
         self.button_box.button(QDialogButtonBox.Cancel).setEnabled(False)
         # End of workerFinished
-
-    def progressbarReset(self, ok):
-        self.showInfo("reset")
-        self.progressBar.reset()
-        self.aprogressBar.reset()
-        #self.progressBar.setValue(0.0)
-        #self.aprogressBar.setValue(0.0)
 
     def workerError(self, exception_string):
         """Report an error from the worker."""

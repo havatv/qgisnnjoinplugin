@@ -77,7 +77,6 @@ class Worker(QtCore.QObject):
     '''
     # Define the signals used to communicate back to the application
     progress = QtCore.pyqtSignal(float)  # For reporting progress
-    progressreset = QtCore.pyqtSignal(bool)  # Resetting progress bar
     status = QtCore.pyqtSignal(str)      # For reporting status
     error = QtCore.pyqtSignal(str)       # For reporting errors
     # Signal for sending over the result:
@@ -289,7 +288,6 @@ class Worker(QtCore.QObject):
                             break
                         self.joinlind.insertFeature(feat)
                         self.calculate_progress()
-                #self.progressreset.emit(True)
                 self.status.emit('Join layer index created!')
                 self.processed = 0
                 self.percentage = 0
