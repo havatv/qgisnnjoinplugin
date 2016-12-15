@@ -265,8 +265,6 @@ class Worker(QtCore.QObject):
                     self.nonpointexactindex):
                 # Create a spatial index to speed up joining
                 self.status.emit('Creating join layer index...')
-
-
                 # Number of features in the input layer - used by
                 # calculate_progress
                 if self.selectedjoonly:
@@ -276,11 +274,6 @@ class Worker(QtCore.QObject):
                 # The number of elements that is needed to increment the
                 # progressbar - set early in run()
                 self.increment = self.feature_count // 1000
-
-
-
-
-
                 self.joinlind = QgsSpatialIndex()
                 if self.selectedjoonly:
                     for feat in self.joinvl.selectedFeaturesIterator():
@@ -344,8 +337,6 @@ class Worker(QtCore.QObject):
                     self.joinf.append(f)
             self.features = []
             # Do the join!
-
-
             # Number of features in the input layer - used by
             # calculate_progress
             if self.selectedinonly:
@@ -355,11 +346,6 @@ class Worker(QtCore.QObject):
             # The number of elements that is needed to increment the
             # progressbar - set early in run()
             self.increment = self.feature_count // 1000
-
-
-
-
-
             # Using the original features from the input layer
             for feat in self.inputf:
                 # Allow user abort
