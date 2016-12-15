@@ -151,11 +151,26 @@ class Worker(QtCore.QObject):
 
     def run(self):
         try:
+            # Check if the layers look OK
             if self.inpvl is None or self.joinvl is None:
                 self.status.emit('Layer is missing!')
                 self.finished.emit(False, None)
                 return
-            self.status.emit('Feature count: ' + str(self.feature_count))
+            # Check if there are features in the layers
+            incount = 0
+            if self.selectedinonly:
+                incount = self.inpvl.selectedFeatureCount()
+            else:
+                incount = self.inpvl.featureCount()
+            joincount = 0
+            if self.selectedjoonly:
+                joincount = self.joinvl.selectedFeatureCount()
+            else:
+                joincount = self.joinvl.featureCount()
+            if incount == 0 or joincount == 0:
+                self.status.emit('Layer without features!')
+                self.finished.emit(False, None)
+                return
             # Check the geometry type and prepare the output layer
             geometryType = self.inpvl.geometryType()
             geometrytypetext = 'Point'
