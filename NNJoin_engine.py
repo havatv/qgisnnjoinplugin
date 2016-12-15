@@ -436,8 +436,9 @@ class Worker(QtCore.QObject):
                         # The first feature is the same as the input
                         # feature, so choose the second one
                         if self.selectedjoonly:
-                            nnfeature = next(self.joinvl.selectedFeaturesIterator(
-                                QgsFeatureRequest(nearestids[1])))
+                            nnfeature = next(
+                                self.joinvl.selectedFeaturesIterator(
+                                    QgsFeatureRequest(nearestids[1])))
                         else:
                             nnfeature = next(self.joinvl.getFeatures(
                                 QgsFeatureRequest(nearestids[1])))
@@ -445,8 +446,9 @@ class Worker(QtCore.QObject):
                         # The first feature is not the same as the
                         # input feature, so choose it
                         if self.selectedjoonly:
-                            nnfeature = next(self.joinvl.selectedFeaturesIterator(
-                                QgsFeatureRequest(nearestids[0])))
+                            nnfeature = next(
+                                self.joinvl.selectedFeaturesIterator(
+                                    QgsFeatureRequest(nearestids[0])))
                         else:
                             nnfeature = next(self.joinvl.getFeatures(
                                 QgsFeatureRequest(nearestids[0])))
