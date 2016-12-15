@@ -66,6 +66,9 @@ included in the output layer.
 
 Options
 =============
+- The user can choose if only selected features are to be considered,
+  both for the input and join layer.
+
 - The user can choose to use an approximation of the input geometry
   (the centroid - *QgsGeometry.centroid*) to allow the use of spatial
   indexes also for non-point input layers.
@@ -216,9 +219,12 @@ The current version is 1.3.0
 
 - 1.3.0
 
-  - Allow the specification of the name of the attribute
-    that will contain the distance to the nearest neighbour.
-  - Modernisation of the code.
+  - Added checkbox for selected features only for both input and join
+    layer (#3)
+  - Allow the specification of the name of the attribute that will
+    contain the distance to the nearest neighbour (#2)
+  - Use the progress bar when generating the join layer index (#4)
+  - Modernisation of the code
 
 - 1.2.2
 
