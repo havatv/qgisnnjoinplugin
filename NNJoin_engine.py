@@ -24,7 +24,7 @@
 from qgis.core import QgsMessageLog
 from qgis.core import QgsWkbTypes
 from qgis.core import QgsVectorLayer, QgsFeature, QgsSpatialIndex
-from qgis.core import QgsFeatureRequest, QgsField, QgsGeometry
+from qgis.core import QgsFeatureRequest, QgsField
 from qgis.core import QgsRectangle, QgsCoordinateTransform
 
 #QGIS 3
@@ -388,11 +388,11 @@ class Worker(QtCore.QObject):
         # Get the feature ID
         infeatureid = infeature.id()
         # Get the feature geometry
-        inputgeom = QgsGeometry(infeature.geometry())
+        inputgeom = infeature.geometry()
         # Shall approximate input geometries be used?
         if self.approximateinputgeom:
             # Use the centroid as the input geometry
-            inputgeom = QgsGeometry(infeature.geometry()).centroid()
+            inputgeom = infeature.geometry().centroid()
         # Check if the coordinate systems are equal, if not,
         # transform the input feature!
         if (self.inpvl.crs() != self.joinvl.crs()):
@@ -514,7 +514,7 @@ class Worker(QtCore.QObject):
                 for inFeatJoin in self.joinf:
                     if self.abort is True:
                         break
-                    joingeom = QgsGeometry(inFeatJoin.geometry())
+                    joingeom = inFeatJoin.geometry()
                     thisdistance = inputgeom.distance(joingeom)
                     # If the distance is 0, check for equality of the
                     # features (in case it is a self join)
@@ -533,7 +533,7 @@ class Worker(QtCore.QObject):
                 # Use the spatial index on the join layer (default).
                 # First we do an approximate search
                 # Get the input geometry centroid
-                centroid = QgsGeometry(infeature.geometry()).centroid()
+                centroid = infeature.geometry().centroid()
                 centroidgeom = centroid.asPoint()
                 # Find the nearest neighbour (index geometries only)
                 nearestid = self.joinlind.nearestNeighbor(centroidgeom, 1)[0]
@@ -593,7 +593,7 @@ class Worker(QtCore.QObject):
                 for inFeatJoin in self.joinf:
                     if self.abort is True:
                         break
-                    joingeom = QgsGeometry(inFeatJoin.geometry())
+                    joingeom = inFeatJoin.geometry()
                     thisdistance = inputgeom.distance(joingeom)
                     # If the distance is 0, check for equality of the
                     # features (in case it is a self join)
@@ -617,10 +617,10 @@ class Worker(QtCore.QObject):
             # Create the feature
             outFeat = QgsFeature()
             # Use the original input layer geometry!:
-            outFeat.setGeometry(QgsGeometry(infeature.geometry()))
+            outFeat.setGeometry(infeature.geometry())
             # Use the modified input layer geometry (could be
             # centroid)
-            #outFeat.setGeometry(QgsGeometry(inputgeom))
+            #outFeat.setGeometry(inputgeom)
             # Add the attributes
             outFeat.setAttributes(attrs)
             self.calculate_progress()
