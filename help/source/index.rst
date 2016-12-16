@@ -215,7 +215,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 1.3.0
+The current version is 3.0.0
+
+- 3.0.0
+
+  - QGIS 3 update
 
 - 1.3.0
 

@@ -22,20 +22,22 @@
 """
 import os.path
 # QGIS imports
-from qgis.core import QgsMapLayerRegistry, QgsMapLayer
-from qgis.core import QGis
-#from qgis.core import QgsWkbTypes
+from qgis.core import QgsProject, QgsMapLayer
+#from qgis.core import QgsMapLayerRegistry, QgsMapLayer
+#from qgis.core import QGis
+from qgis.core import QgsWkbTypes
+
 #import processing
 
 #QGIS 3
-#from qgis.PyQt.QtCore import QSettings, QCoreApplication, QTranslator
-#from qgis.PyQt.QtCore import qVersion
-#from qgis.PyQt.QtWidgets import QAction, QMessageBox
-#from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import QSettings, QCoreApplication, QTranslator
+from qgis.PyQt.QtCore import qVersion
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtGui import QIcon
 
 #QGIS 2
-from PyQt4.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
-from PyQt4.QtGui import QAction, QMessageBox, QIcon
+#from PyQt4.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
+#from PyQt4.QtGui import QAction, QMessageBox, QIcon
 
 # Plugin imports
 import sys
@@ -137,7 +139,8 @@ class NNJoin(object):
         self.dlg.progressBar.setValue(0.0)
         self.dlg.outputDataset.setText('Result')
         # Populate the input and join layer combo boxes
-        layers = QgsMapLayerRegistry.instance().mapLayers()
+#        layers = QgsMapLayerRegistry.instance().mapLayers()
+        layers = QgsProject.instance().mapLayers()
         layerslist = []
         for id in layers.keys():
             if layers[id].type() == QgsMapLayer.VectorLayer:
@@ -145,7 +148,7 @@ class NNJoin(object):
                     QMessageBox.information(None,
                         self.tr('Information'),
                         'Layer ' + layers[id].name() + ' is not valid')
-                if layers[id].wkbType() != QGis.WKBNoGeometry:
+                if layers[id].wkbType() != QgsWkbTypes.NoGeometry:
                     layerslist.append((layers[id].name(), id))
         if len(layerslist) == 0 or len(layers) == 0:
             QMessageBox.information(None,

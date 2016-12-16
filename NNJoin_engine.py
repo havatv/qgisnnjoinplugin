@@ -22,19 +22,14 @@
 """
 
 from qgis.core import QgsMessageLog
-from qgis.core import QGis
-#from qgis.core import QgsWkbTypes
+from qgis.core import QgsWkbTypes
 from qgis.core import QgsVectorLayer, QgsFeature, QgsSpatialIndex
 from qgis.core import QgsFeatureRequest, QgsField, QgsGeometry
 from qgis.core import QgsRectangle, QgsCoordinateTransform
 
 #QGIS 3
-#from qgis.PyQt import QtCore
-#from qgis.PyQt.QtCore import QCoreApplication, QVariant
-
-#QGIS 2
-from PyQt4 import QtCore
-from PyQt4.QtCore import QCoreApplication, QVariant
+from qgis.PyQt import QtCore
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
 
 
 class Worker(QtCore.QObject):
@@ -173,11 +168,11 @@ class Worker(QtCore.QObject):
             # Check the geometry type and prepare the output layer
             geometryType = self.inpvl.geometryType()
             geometrytypetext = 'Point'
-            if geometryType == QGis.Point:
+            if geometryType == QgsWkbTypes.PointGeometry:
                 geometrytypetext = 'Point'
-            elif geometryType == QGis.Line:
+            elif geometryType == QgsWkbTypes.LineGeometry:
                 geometrytypetext = 'LineString'
-            elif geometryType == QGis.Polygon:
+            elif geometryType == QgsWkbTypes.PolygonGeometry:
                 geometrytypetext = 'Polygon'
             # Does the input vector contain multi-geometries?
             # Try to check the first feature
@@ -258,8 +253,8 @@ class Worker(QtCore.QObject):
             # accepted that a join layer index is used (for
             # non-point input layers).
             # (Could be extended to multipoint)
-            if (self.inpvl.wkbType() == QGis.WKBPoint or
-                    self.inpvl.wkbType() == QGis.WKBPoint25D or
+            if (self.inpvl.wkbType() == QgsWkbTypes.Point or
+                    self.inpvl.wkbType() == QgsWkbTypes.Point25D or
                     self.approximateinputgeom or
                     self.nonpointexactindex):
                 # Create a spatial index to speed up joining
@@ -414,14 +409,14 @@ class Worker(QtCore.QObject):
         nnfeature = None
         mindist = float("inf")
         if (self.approximateinputgeom or
-                self.inpvl.wkbType() == QGis.WKBPoint or
-                self.inpvl.wkbType() == QGis.WKBPoint25D):
+                self.inpvl.wkbType() == QgsWkbTypes.Point or
+                self.inpvl.wkbType() == QgsWkbTypes.Point25D):
             # The input layer's geometry type is point, or has been
             # approximated to point (centroid).
             # Then a join index will always be used.
             if (self.usejoinlayerapprox or
-                    self.joinvl.wkbType() == QGis.WKBPoint or
-                    self.joinvl.wkbType() == QGis.WKBPoint25D):
+                    self.joinvl.wkbType() == QgsWkbTypes.Point or
+                    self.joinvl.wkbType() == QgsWkbTypes.Point25D):
                 # The join index nearest neighbour function can
                 # be used without refinement.
                 if self.selfjoin:
@@ -461,10 +456,10 @@ class Worker(QtCore.QObject):
                         nnfeature = next(self.joinvl.getFeatures(
                                  QgsFeatureRequest(nearestid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
-            elif (self.joinvl.wkbType() == QGis.WKBPolygon or
-                  self.joinvl.wkbType() == QGis.WKBPolygon25D or
-                  self.joinvl.wkbType() == QGis.WKBLineString or
-                  self.joinvl.wkbType() == QGis.WKBLineString25D):
+            elif (self.joinvl.wkbType() == QgsWkbTypes.Polygon or
+                  self.joinvl.wkbType() == QgsWkbTypes.Polygon25D or
+                  self.joinvl.wkbType() == QgsWkbTypes.LineString or
+                  self.joinvl.wkbType() == QgsWkbTypes.LineString25D):
                 # Use the join layer index to speed up the join when
                 # the join layer geometry type is polygon or line
                 # and the input layer geometry type is point or an

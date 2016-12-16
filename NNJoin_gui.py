@@ -24,28 +24,19 @@
 from os.path import dirname
 from os.path import join
 
-from qgis.core import QgsMessageLog, QgsMapLayerRegistry
-from qgis.core import QGis
+from qgis.core import QgsMessageLog, QgsProject
 from qgis.core import QgsMapLayer
-#from qgis.core import QgsWkbTypes
+from qgis.core import QgsWkbTypes
 from qgis.gui import QgsMessageBar
 from qgis.utils import showPluginHelp
 
 # QGIS 3
-#from qgis.PyQt import uic
-#from qgis.PyQt.QtCore import SIGNAL, QObject, QThread, Qt
-#from qgis.PyQt.QtCore import QCoreApplication, QUrl
-#from qgis.PyQt.QtWidgets import QDialog, QDialogButtonBox
-#from qgis.PyQt.QtWidgets import QProgressBar, QPushButton
-#from qgis.PyQt.QtGui import QDesktopServices
-
-# QGIS 2
-from PyQt4 import uic
-from PyQt4.QtCore import QObject, QThread, Qt
-from PyQt4.QtCore import QCoreApplication, QUrl
-from PyQt4.QtGui import QDialog, QDialogButtonBox, QProgressBar
-from PyQt4.QtGui import QPushButton, QMessageBox
-#from PyQt4.QtGui import QDesktopServices
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QObject, QThread, Qt
+from qgis.PyQt.QtCore import QCoreApplication, QUrl
+from qgis.PyQt.QtWidgets import QDialog, QDialogButtonBox
+from qgis.PyQt.QtWidgets import QProgressBar, QPushButton
+from qgis.PyQt.QtGui import QDesktopServices
 
 from .NNJoin_engine import Worker
 
@@ -111,7 +102,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinIndexCh.connect(self.joinlayerchanged)
         self.distancefieldname.editingFinished.connect(self.fieldchanged)
         self.joinPrefix.editingFinished.connect(self.fieldchanged)
-        theRegistry = QgsMapLayerRegistry.instance()
+        theRegistry = QgsProject.instance()
         theRegistry.layersAdded.connect(self.layerlistchanged)
         theRegistry.layersRemoved.connect(self.layerlistchanged)
         # Disconnect the cancel button to avoid exiting.
@@ -120,6 +111,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Set instance variables
         self.mem_layer = None
         self.worker = None
+        self.mythread = None
         self.inputlayerid = None
         self.joinlayerid = None
         self.layerlistchanging = False
@@ -129,17 +121,17 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         try:
             layerindex = self.inputVectorLayer.currentIndex()
             layerId = self.inputVectorLayer.itemData(layerindex)
-            inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+            inputlayer = QgsProject.instance().mapLayer(layerId)
             if inputlayer is None:
                 self.showError(self.tr('No input layer defined'))
                 return
             joinindex = self.joinVectorLayer.currentIndex()
             joinlayerId = self.joinVectorLayer.itemData(joinindex)
-            joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+            joinlayer = QgsProject.instance().mapLayer(joinlayerId)
             if joinlayer is None:
                 self.showError(self.tr('No join layer defined'))
                 return
-            if joinlayer is not None and joinlayer.crs().geographicFlag():
+            if joinlayer is not None and joinlayer.crs().isGeographic():
                 self.showWarning('Geographic CRS used for the join layer -'
                                  ' distances will be in decimal degrees!')
             outputlayername = self.outputDataset.text()
@@ -152,7 +144,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             selectedinputonly = self.inputSelected.isChecked()
             selectedjoinonly = self.joinSelected.isChecked()
             # create a new worker instance
-            worker = Worker(inputlayer, joinlayer, outputlayername,
+            self.worker = Worker(inputlayer, joinlayer, outputlayername,
                             joinprefix, distancefieldname,
                             approximateinputgeom, useindexapproximation,
                             useindex, selectedinputonly, selectedjoinonly)
@@ -172,17 +164,17 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                                self.iface.messageBar().INFO)
             self.messageBar = msgBar
             # start the worker in a new thread
-            thread = QThread(self)
-            worker.moveToThread(thread)
-            worker.finished.connect(self.workerFinished)
-            worker.error.connect(self.workerError)
-            worker.status.connect(self.workerInfo)
-            worker.progress.connect(self.progressBar.setValue)
-            worker.progress.connect(self.aprogressBar.setValue)
-            thread.started.connect(worker.run)
-            thread.start()
-            self.thread = thread
-            self.worker = worker
+            self.mythread = QThread(self)
+            self.worker.moveToThread(self.mythread)
+            self.worker.finished.connect(self.workerFinished)
+            self.worker.error.connect(self.workerError)
+            self.worker.status.connect(self.workerInfo)
+            self.worker.progress.connect(self.progressBar.setValue)
+            self.worker.progress.connect(self.aprogressBar.setValue)
+            self.mythread.started.connect(self.worker.run)
+            self.mythread.start()
+            #self.thread = thread
+            #self.worker = worker
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
             self.button_box.button(QDialogButtonBox.Close).setEnabled(False)
             self.button_box.button(QDialogButtonBox.Cancel).setEnabled(True)
@@ -201,9 +193,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
            worker has finished."""
         # clean up the worker and thread
         self.worker.deleteLater()
-        self.thread.quit()
-        self.thread.wait()
-        self.thread.deleteLater()
+        self.mythread.quit()
+        self.mythread.wait()
+        self.mythread.deleteLater()
         # remove widget from message bar (pop)
         self.iface.messageBar().popWidget(self.messageBar)
         if ok and ret is not None:
@@ -214,7 +206,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             mem_layer.dataProvider().updateExtents()
             mem_layer.commitChanges()
             self.layerlistchanging = True
-            QgsMapLayerRegistry.instance().addMapLayer(mem_layer)
+            QgsProject.instance().addMapLayer(mem_layer)
             self.layerlistchanging = False
         else:
             # notify the user that something went wrong
@@ -252,9 +244,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         self.joinlayerid = joinlayerId
-        joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        joinlayer = QgsProject.instance().mapLayer(joinlayerId)
         # Geographic? - give a warning!
-        if joinlayer is not None and joinlayer.crs().geographicFlag():
+        if joinlayer is not None and joinlayer.crs().isGeographic():
             self.showWarning('Geographic CRS used for the join layer -'
                              ' distances will be in decimal degrees!')
         self.layerchanged()
@@ -270,12 +262,12 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         layerindex = self.inputVectorLayer.currentIndex()
         layerId = self.inputVectorLayer.itemData(layerindex)
         self.inputlayerid = layerId
-        inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+        inputlayer = QgsProject.instance().mapLayer(layerId)
         # Retrieve the join layer
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
         self.joinlayerid = joinlayerId
-        joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        joinlayer = QgsProject.instance().mapLayer(joinlayerId)
         # Update the input layer UI label with input geometry
         # type information
         if inputlayer is not None:
@@ -312,7 +304,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Repopulate the input and join layer combo boxes
         # Save the currently selected input layer
         inputlayerid = self.inputlayerid
-        layers = QgsMapLayerRegistry.instance().mapLayers()
+        layers = QgsProject.instance().mapLayers()
         layerslist = []
         for id in layers.keys():
             if layers[id].type() == QgsMapLayer.VectorLayer:
@@ -320,7 +312,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                     QMessageBox.information(None,
                         self.tr('Information'),
                         'Layer ' + layers[id].name() + ' is not valid')
-                if layers[id].wkbType() != QGis.WKBNoGeometry:
+                if layers[id].wkbType() != QgsWkbTypes.NoGeometry:
                     layerslist.append((layers[id].name(), id))
         # Add the layers to the input layers combobox
         self.inputVectorLayer.clear()
@@ -357,11 +349,11 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Retrieve the input layer
         layerindex = self.inputVectorLayer.currentIndex()
         layerId = self.inputVectorLayer.itemData(layerindex)
-        inputlayer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+        inputlayer = QgsProject.instance().mapLayer(layerId)
         # Retrieve the join layer
         joinindex = self.joinVectorLayer.currentIndex()
         joinlayerId = self.joinVectorLayer.itemData(joinindex)
-        joinlayer = QgsMapLayerRegistry.instance().mapLayer(joinlayerId)
+        joinlayer = QgsProject.instance().mapLayer(joinlayerId)
         # Enable the OK button (if layers are OK)
         if inputlayer is not None and joinlayer is not None:
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
@@ -369,12 +361,12 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # user interface options accordingly
         if inputlayer is not None:
             wkbType = inputlayer.wkbType()
-            joinwkbType = QGis.WKBUnknown
+            joinwkbType = QgsWkbTypes.Unknown
             if joinlayer is not None:
                 joinwkbType = joinlayer.wkbType()
             # If the input layer is not a point layer, allow choosing
             # approximate geometry (centroid)
-            if wkbType == QGis.WKBPoint or wkbType == QGis.WKBPoint25D:
+            if wkbType == QgsWkbTypes.Point or wkbType == QgsWkbTypes.Point25D:
                 # Input layer is a simple point layer and can not
                 # be approximated
                 self.approximate_input_geom_cb.blockSignals(True)
@@ -388,10 +380,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.approximate_input_geom_cb.setVisible(True)
                 self.approximate_input_geom_cb.blockSignals(False)
             # Update the use index checkbox
-            if ((wkbType == QGis.WKBLineString or
-                    wkbType == QGis.WKBLineString25D or
-                    wkbType == QGis.WKBPolygon or
-                    wkbType == QGis.WKBPolygon25D) and
+            if ((wkbType == QgsWkbTypes.LineString or
+                    wkbType == QgsWkbTypes.LineString25D or
+                    wkbType == QgsWkbTypes.Polygon or
+                    wkbType == QgsWkbTypes.Polygon25D) and
                     not self.approximate_input_geom_cb.isChecked()):
                 # The input layer is a line or polygong layer that
                 # is not approximated, so the user is allowed to
@@ -411,11 +403,11 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.use_index_nonpoint_cb.setVisible(False)
                 self.use_index_nonpoint_cb.blockSignals(False)
             # Update the use index approximation checkbox:
-            if ((wkbType == QGis.WKBPoint or
-                 wkbType == QGis.WKBPoint25D or
+            if ((wkbType == QgsWkbTypes.Point or
+                 wkbType == QgsWkbTypes.Point25D or
                  self.approximate_input_geom_cb.isChecked())
-                and not (joinwkbType == QGis.WKBPoint or
-                         joinwkbType == QGis.WKBPoint25D)):
+                and not (joinwkbType == QgsWkbTypes.Point or
+                         joinwkbType == QgsWkbTypes.Point25D)):
                 # For non-point join layers and point input layers,
                 # the user is allowed to choose an approximation (the
                 # index geometry) to be used for the join geometry in
@@ -467,33 +459,33 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # End of updateui
 
     def getwkbtext(self, number):
-        if number == QGis.WKBUnknown:
+        if number == QgsWkbTypes.Unknown:
             return "Unknown"
-        elif number == QGis.WKBPoint:
+        elif number == QgsWkbTypes.Point:
             return "Point"
-        elif number == QGis.WKBLineString:
+        elif number == QgsWkbTypes.LineString:
             return "LineString"
-        elif number == QGis.WKBPolygon:
+        elif number == QgsWkbTypes.Polygon:
             return "Polygon"
-        elif number == QGis.WKBMultiPoint:
+        elif number == QgsWkbTypes.MultiPoint:
             return "MultiPoint"
-        elif number == QGis.WKBMultiLineString:
+        elif number == QgsWkbTypes.MultiLineString:
             return "MultiLineString"
-        elif number == QGis.WKBMultiPolygon:
+        elif number == QgsWkbTypes.MultiPolygon:
             return "MultiPolygon"
-        elif number == QGis.WKBNoGeometry:
+        elif number == QgsWkbTypes.NoGeometry:
             return "NoGeometry"
-        elif number == QGis.WKBPoint25D:
+        elif number == QgsWkbTypes.Point25D:
             return "Point25D"
-        elif number == QGis.WKBLineString25D:
+        elif number == QgsWkbTypes.LineString25D:
             return "LineString25D"
-        elif number == QGis.WKBPolygon25D:
+        elif number == QgsWkbTypes.Polygon25D:
             return "Polygon25D"
-        elif number == QGis.WKBMultiPoint25D:
+        elif number == QgsWkbTypes.MultiPoint25D:
             return "MultiPoint25D"
-        elif number == QGis.WKBMultiLineString25D:
+        elif number == QgsWkbTypes.MultiLineString25D:
             return "MultiLineString25D"
-        elif number == QGis.WKBMultiPolygon25D:
+        elif number == QgsWkbTypes.MultiPolygon25D:
             return "MultiPolygon25D"
         else:
             showError('Unknown or invalid geometry type: ' + str(number))
