@@ -28,7 +28,7 @@ from qgis.core import QgsMessageLog, QgsProject
 from qgis.core import QgsMapLayer
 from qgis.core import QgsWkbTypes
 from qgis.gui import QgsMessageBar
-from qgis.utils import showPluginHelp
+#from qgis.utils import showPluginHelp
 
 # QGIS 3
 from qgis.PyQt import uic
@@ -523,9 +523,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                  QgsMessageLog.INFO)
 
     def help(self):
-        #QDesktopServices.openUrl(QUrl.fromLocalFile(
-        #                 self.plugin_dir + "/help/html/index.html"))
-        showPluginHelp(None, "help/html/index")
+        QDesktopServices.openUrl(QUrl.fromLocalFile(
+                         self.plugin_dir + "/help/html/index.html"))
+        #showPluginHelp(None, "help/html/index")
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
