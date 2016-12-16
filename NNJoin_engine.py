@@ -187,7 +187,7 @@ class Worker(QtCore.QObject):
                 feats.rewind()
                 feats.close()
                 if testfeature is not None:
-                    if testfeature.geometry() is not None:
+                    if testfeature.hasGeometry():
                         if testfeature.geometry().isMultipart():
                             self.inputmulti = True
                             geometrytypetext = 'Multi' + geometrytypetext
@@ -300,7 +300,7 @@ class Worker(QtCore.QObject):
                 feats.rewind()
                 feats.close()
                 if testfeature is not None:
-                    if testfeature.geometry() is not None:
+                    if testfeature.hasGeometry():
                         if testfeature.geometry().isMultipart():
                             self.joinmulti = True
                     else:
