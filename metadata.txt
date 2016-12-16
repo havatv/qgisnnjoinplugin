@@ -49,7 +49,7 @@ category=Vector
 homepage=http://arken.nmbu.no/~havatv/gis/qgisplugins/NNJoin
 tracker=https://github.com/havatv/qgisnnjoinplugin/issues
 repository=https://github.com/havatv/qgisnnjoinplugin.git
-experimental=False
+experimental=True
 deprecated=False
 icon=nnjoin.png
 
