@@ -213,9 +213,13 @@ class Worker(QtCore.QObject):
             geomttext = geometrytypetext
             # Set the coordinate reference system to the input
             # layer's CRS using authid (proj4 may be more robust)
+            crstext = "PROJ4:"+str(self.inpvl.crs().toProj4())
+            # If the authid is valid (EPSG), use it.
+            if "EPSG" in str(self.inpvl.crs().authid()):
+                crstext = self.inpvl.crs().authid()
             if self.inpvl.crs() is not None:
                 geomttext = (geomttext + "?crs=" +
-                             str(self.inpvl.crs().authid()))
+                              crstext)
             # Retrieve the fields from the input layer
             outfields = self.inpvl.pendingFields().toList()
             # Retrieve the fields from the join layer
