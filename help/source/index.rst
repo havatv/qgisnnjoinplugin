@@ -63,6 +63,9 @@ The attributes from the *join* layer will get a prefix
 If a join prefix is not used, attributes from the join layer that
 have the same name as an attributes in the input layer will not be
 included in the output layer.
+The result layer will have the CRS of the input layer, but the
+distances will be according to the join layer CRS and use the join
+layer CRS unit.
 
 Options
 =============
