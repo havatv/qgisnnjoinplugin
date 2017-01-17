@@ -165,13 +165,18 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.messageBar = msgBar
             # start the worker in a new thread
             self.mythread = QThread(self)
-            self.worker.moveToThread(self.mythread)
-            self.worker.finished.connect(self.workerFinished)
-            self.worker.error.connect(self.workerError)
+            self.mythread.started.connect(self.worker.run)
             self.worker.status.connect(self.workerInfo)
             self.worker.progress.connect(self.progressBar.setValue)
             self.worker.progress.connect(self.aprogressBar.setValue)
-            self.mythread.started.connect(self.worker.run)
+            self.worker.finished.connect(self.workerFinished)
+            self.worker.error.connect(self.workerError)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.worker.error.connect(self.worker.deleteLater)
+            self.worker.finished.connect(self.mythread.quit)
+            self.worker.error.connect(self.mythread.quit)
+            self.mythread.finished.connect(self.mythread.deleteLater)
+            self.worker.moveToThread(self.mythread)
             self.mythread.start()
             #self.thread = thread
             #self.worker = worker
@@ -192,10 +197,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         """Handles the output from the worker and cleans up after the
            worker has finished."""
         # clean up the worker and thread
-        self.worker.deleteLater()
-        self.mythread.quit()
-        self.mythread.wait()
-        self.mythread.deleteLater()
+        #self.worker.deleteLater()
+        #self.mythread.quit()
+        #self.mythread.wait()
+        #self.mythread.deleteLater()
         # remove widget from message bar (pop)
         self.iface.messageBar().popWidget(self.messageBar)
         if ok and ret is not None:
