@@ -111,7 +111,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Set instance variables
         self.mem_layer = None
         self.worker = None
-        self.mythread = None
         self.inputlayerid = None
         self.joinlayerid = None
         self.layerlistchanging = False
@@ -164,8 +163,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                                self.iface.messageBar().INFO)
             self.messageBar = msgBar
             # start the worker in a new thread
-            self.mythread = QThread(self)
-            self.mythread.started.connect(self.worker.run)
+            mythread = QThread(self)
+            mythread.started.connect(self.worker.run)
             self.worker.status.connect(self.workerInfo)
             self.worker.progress.connect(self.progressBar.setValue)
             self.worker.progress.connect(self.aprogressBar.setValue)
@@ -173,11 +172,11 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.worker.error.connect(self.workerError)
             self.worker.finished.connect(self.worker.deleteLater)
             self.worker.error.connect(self.worker.deleteLater)
-            self.worker.finished.connect(self.mythread.quit)
-            self.worker.error.connect(self.mythread.quit)
-            self.mythread.finished.connect(self.mythread.deleteLater)
-            self.worker.moveToThread(self.mythread)
-            self.mythread.start()
+            self.worker.finished.connect(mythread.quit)
+            self.worker.error.connect(mythread.quit)
+            mythread.finished.connect(mythread.deleteLater)
+            self.worker.moveToThread(mythread)
+            mythread.start()
             #self.thread = thread
             #self.worker = worker
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
@@ -196,11 +195,6 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def workerFinished(self, ok, ret):
         """Handles the output from the worker and cleans up after the
            worker has finished."""
-        # clean up the worker and thread
-        #self.worker.deleteLater()
-        #self.mythread.quit()
-        #self.mythread.wait()
-        #self.mythread.deleteLater()
         # remove widget from message bar (pop)
         self.iface.messageBar().popWidget(self.messageBar)
         if ok and ret is not None:
