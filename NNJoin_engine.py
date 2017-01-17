@@ -239,10 +239,12 @@ class Worker(QtCore.QObject):
                         collission = True
                         self.distancename = self.distancename + '1'
             outfields.append(QgsField(self.distancename, QVariant.Double))
-            # Create a memory layer
+            # Create a memory layer using a CRS description
             self.mem_joinl = QgsVectorLayer(geomttext,
                                             self.outputlayername,
                                             "memory")
+            # Set the CRS to the inputlayer's CRS
+            self.mem_joinl.setCrs(self.inpvl.crs())
             self.mem_joinl.startEditing()
             # Add the fields
             for field in outfields:
