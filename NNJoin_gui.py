@@ -169,7 +169,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.worker.progress.connect(self.aprogressBar.setValue)
             self.worker.finished.connect(self.workerFinished)
             self.worker.error.connect(self.workerError)
-            self.cancelButton.clicked.connect(self.worker.kill)
+            self.cancelButton.clicked.connect(self.worker.kill) # Must come
+                                                      # before movetothread
             acancelButton.clicked.connect(self.worker.kill)
             self.worker.finished.connect(self.worker.deleteLater)
             self.worker.finished.connect(self.mythread.quit)
