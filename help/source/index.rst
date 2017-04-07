@@ -215,12 +215,15 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.0.1
+The current version is 3.0.2
+
+- 3.0.2
+
+  - Fixed cancel button not working issue (#8)
 
 - 3.0.1
 
   - Fixed issues with thread cleanup (#5)
-  - Fixed cancel button not working issue (#8)
   - Fixed CRS issue (#6)
 
 - 3.0.0
