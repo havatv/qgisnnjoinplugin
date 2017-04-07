@@ -175,7 +175,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.worker.finished.connect(self.mythread.quit)
             #self.worker.error.connect(self.worker.deleteLater)
             #self.worker.error.connect(self.mythread.quit)
-            self.worker.moveToThread(self.mythread)  # Must come before thread.started.connect!
+            self.worker.moveToThread(self.mythread)  # Must come before
+                                                     # thread.started.connect!
             self.mythread.started.connect(self.worker.run)
             self.mythread.finished.connect(self.mythread.deleteLater)
             self.mythread.start()
@@ -495,9 +496,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
 
     def killWorker(self):
         """Kill the worker thread."""
-        if self.worker is not None:
-            self.showInfo(self.tr('Killing worker'))
-            self.worker.kill()
+        #if self.worker is not None:
+        #    self.showInfo(self.tr('Killing worker'))
+        #    self.worker.kill()
 
     def showError(self, text):
         """Show an error."""
