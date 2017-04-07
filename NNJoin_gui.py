@@ -65,8 +65,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # Modify ui components
         okButton = self.button_box.button(QDialogButtonBox.Ok)
         okButton.setText(self.OK)
-        cancelButton = self.button_box.button(QDialogButtonBox.Cancel)
-        cancelButton.setText(self.CANCEL)
+        self.cancelButton = self.button_box.button(QDialogButtonBox.Cancel)
+        self.cancelButton.setText(self.CANCEL)
         closeButton = self.button_box.button(QDialogButtonBox.Close)
         closeButton.setText(self.CLOSE)
         self.approximate_input_geom_cb.setCheckState(Qt.Unchecked)
@@ -86,7 +86,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
 
         # Connect signals
         okButton.clicked.connect(self.startWorker)
-        cancelButton.clicked.connect(self.killWorker)
+        #self.cancelButton.clicked.connect(self.killWorker)
         closeButton.clicked.connect(self.reject)
         helpButton.clicked.connect(self.help)
         self.approximate_input_geom_cb.stateChanged['int'].connect(
@@ -154,7 +154,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.aprogressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             acancelButton = QPushButton()
             acancelButton.setText(self.CANCEL)
-            acancelButton.clicked.connect(self.killWorker)
+            #acancelButton.clicked.connect(self.killWorker)
             msgBar.layout().addWidget(self.aprogressBar)
             msgBar.layout().addWidget(acancelButton)
             # Has to be popped after the thread has finished (in
@@ -163,20 +163,22 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                                self.iface.messageBar().INFO)
             self.messageBar = msgBar
             # start the worker in a new thread
-            mythread = QThread(self)
-            mythread.started.connect(self.worker.run)
+            self.mythread = QThread(self)  # QT requires the "self"
             self.worker.status.connect(self.workerInfo)
             self.worker.progress.connect(self.progressBar.setValue)
             self.worker.progress.connect(self.aprogressBar.setValue)
             self.worker.finished.connect(self.workerFinished)
             self.worker.error.connect(self.workerError)
+            self.cancelButton.clicked.connect(self.worker.kill)
+            acancelButton.clicked.connect(self.worker.kill)
             self.worker.finished.connect(self.worker.deleteLater)
-            self.worker.error.connect(self.worker.deleteLater)
-            self.worker.finished.connect(mythread.quit)
-            self.worker.error.connect(mythread.quit)
-            mythread.finished.connect(mythread.deleteLater)
-            self.worker.moveToThread(mythread)
-            mythread.start()
+            self.worker.finished.connect(self.mythread.quit)
+            #self.worker.error.connect(self.worker.deleteLater)
+            #self.worker.error.connect(self.mythread.quit)
+            self.worker.moveToThread(self.mythread)  # Must come before thread.started.connect!
+            self.mythread.started.connect(self.worker.run)
+            self.mythread.finished.connect(self.mythread.deleteLater)
+            self.mythread.start()
             #self.thread = thread
             #self.worker = worker
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
