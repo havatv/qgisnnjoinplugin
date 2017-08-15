@@ -179,7 +179,8 @@ class Worker(QtCore.QObject):
             # This is not used for anything yet
             self.inputmulti = False
             if self.selectedinonly:
-                feats = self.inpvl.selectedFeaturesIterator()
+                #feats = self.inpvl.selectedFeaturesIterator()
+                feats = self.inpvl.getSelectedFeatures()
             else:
                 feats = self.inpvl.getFeatures()
             if feats is not None:
@@ -272,7 +273,8 @@ class Worker(QtCore.QObject):
                 self.increment = self.feature_count // 1000
                 self.joinlind = QgsSpatialIndex()
                 if self.selectedjoonly:
-                    for feat in self.joinvl.selectedFeaturesIterator():
+                    #for feat in self.joinvl.selectedFeaturesIterator():
+                    for feat in self.joinvl.getSelectedFeatures():
                         # Allow user abort
                         if self.abort is True:
                             break
@@ -294,7 +296,7 @@ class Worker(QtCore.QObject):
             # This is not used for anything yet
             self.joinmulti = False
             if self.selectedjoonly:
-                feats = self.joinvl.selectedFeaturesIterator()
+                feats = self.joinvl.getSelectedFeatures()
             else:
                 feats = self.joinvl.getFeatures()
             if feats is not None:
@@ -317,7 +319,7 @@ class Worker(QtCore.QObject):
             # Add the input features to a list
             self.inputf = []
             if self.selectedinonly:
-                for f in self.inpvl.selectedFeaturesIterator():
+                for f in self.inpvl.getSelectedFeatures():
                     self.inputf.append(f)
             else:
                 for f in self.inpvl.getFeatures():
@@ -325,7 +327,7 @@ class Worker(QtCore.QObject):
             # Add the join features to a list
             self.joinf = []
             if self.selectedjoonly:
-                for f in self.joinvl.selectedFeaturesIterator():
+                for f in self.joinvl.getSelectedFeatures():
                     self.joinf.append(f)
             else:
                 for f in self.joinvl.getFeatures():
@@ -431,7 +433,7 @@ class Worker(QtCore.QObject):
                         # feature, so choose the second one
                         if self.selectedjoonly:
                             nnfeature = next(
-                                self.joinvl.selectedFeaturesIterator(
+                                self.joinvl.getSelectedFeatures(
                                     QgsFeatureRequest(nearestids[1])))
                         else:
                             nnfeature = next(self.joinvl.getFeatures(
@@ -441,7 +443,7 @@ class Worker(QtCore.QObject):
                         # input feature, so choose it
                         if self.selectedjoonly:
                             nnfeature = next(
-                                self.joinvl.selectedFeaturesIterator(
+                                self.joinvl.getSelectedFeatures(
                                     QgsFeatureRequest(nearestids[0])))
                         else:
                             nnfeature = next(self.joinvl.getFeatures(
@@ -452,7 +454,7 @@ class Worker(QtCore.QObject):
                     nearestid = self.joinlind.nearestNeighbor(
                                            inputgeom.asPoint(), 1)[0]
                     if self.selectedjoonly:
-                        nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                        nnfeature = next(self.joinvl.getSelectedFeatures(
                                  QgsFeatureRequest(nearestid)))
                     else:
                         nnfeature = next(self.joinvl.getFeatures(
@@ -479,7 +481,7 @@ class Worker(QtCore.QObject):
                                   len(nearestindexes) > 1):
                         nearestindexid = nearestindexes[1]
                 if self.selectedjoonly:
-                    nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                    nnfeature = next(self.joinvl.getSelectedFeatures(
                         QgsFeatureRequest(nearestindexid)))
                 else:
                     nnfeature = next(self.joinvl.getFeatures(
@@ -499,7 +501,7 @@ class Worker(QtCore.QObject):
                     if self.selfjoin and closefid == infeatureid:
                         continue
                     if self.selectedjoonly:
-                        closef = next(self.joinvl.selectedFeaturesIterator(
+                        closef = next(self.joinvl.getSelectedFeatures(
                             QgsFeatureRequest(closefid)))
                     else:
                         closef = next(self.joinvl.getFeatures(
@@ -549,7 +551,7 @@ class Worker(QtCore.QObject):
                     if nearestid == infeatureid and len(nearestindexes) > 1:
                         nearestid = nearestindexes[1]
                 if self.selectedjoonly:
-                    nnfeature = next(self.joinvl.selectedFeaturesIterator(
+                    nnfeature = next(self.joinvl.getSelectedFeatures(
                         QgsFeatureRequest(nearestid)))
                 else:
                     nnfeature = next(self.joinvl.getFeatures(
@@ -577,7 +579,7 @@ class Worker(QtCore.QObject):
                     if self.selfjoin and closefid == infeatureid:
                         continue
                     if self.selectedjoonly:
-                        closef = next(self.joinvl.selectedFeaturesIterator(
+                        closef = next(self.joinvl.getSelectedFeatures(
                             QgsFeatureRequest(closefid)))
                     else:
                         closef = next(self.joinvl.getFeatures(
