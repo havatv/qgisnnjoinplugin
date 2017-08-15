@@ -215,7 +215,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.0.2
+The current version is 3.0.3
+
+- 3.0.3
+
+  - selectedFeaturesIterator changed to getSelectedFeatures (#9)
 
 - 3.0.2
 
