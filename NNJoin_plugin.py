@@ -137,16 +137,16 @@ class NNJoin(object):
         self.dlg.progressBar.setValue(0.0)
         self.dlg.outputDataset.setText('Result')
         # Populate the input and join layer combo boxes
-        layers = QgsMapLayerRegistry.instance().mapLayers()
         layerslist = []
-        for id in layers.keys():
-            if layers[id].type() == QgsMapLayer.VectorLayer:
-                if not layers[id].isValid():
+        layers = self.iface.legendInterface().layers()
+        for layer in layers:
+            if layer.type() == QgsMapLayer.VectorLayer:
+                if not layer.isValid():
                     QMessageBox.information(None,
                         self.tr('Information'),
-                        'Layer ' + layers[id].name() + ' is not valid')
-                if layers[id].wkbType() != QGis.WKBNoGeometry:
-                    layerslist.append((layers[id].name(), id))
+                        'Layer ' + layer.name() + ' is not valid')
+                if layer.wkbType() != QGis.WKBNoGeometry:
+                    layerslist.append((layer.name(), layer.id()))
         if len(layerslist) == 0 or len(layers) == 0:
             QMessageBox.information(None,
                self.tr('Information'),
