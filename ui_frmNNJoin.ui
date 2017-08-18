@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>564</width>
-    <height>342</height>
+    <height>381</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,364 +19,351 @@
   <property name="modal">
    <bool>false</bool>
   </property>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>13</x>
-     <y>10</y>
-     <width>541</width>
-     <height>322</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_6">
-    <property name="spacing">
-     <number>2</number>
-    </property>
-    <item>
-     <widget class="QGroupBox" name="groupBox_1">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="title">
-       <string>Input vector layer</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <property name="rightMargin">
-        <number>2</number>
-       </property>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QComboBox" name="inputVectorLayer">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>The base layer for the join.&lt;br&gt;Each feature of this layer will be joined to the nearest neighbour from the join layer.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_inputgeom">
-           <property name="text">
-            <string>Geometry type:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="inputgeometrytypelabel">
-           <property name="font">
-            <font>
-             <italic>true</italic>
-            </font>
-           </property>
-           <property name="text">
-            <string notr="true">Unknown</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="inputSelected">
-           <property name="text">
-            <string>Selected only</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QCheckBox" name="approximate_input_geom_cb">
-           <property name="toolTip">
-            <string>Use approximate input geometries.&lt;br&gt;The result will also be approximate.&lt;br&gt;Could speed up the join considerably.</string>
-           </property>
-           <property name="text">
-            <string>Approximate geometries by centroids</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>Join vector layer</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <property name="rightMargin">
-        <number>2</number>
-       </property>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QComboBox" name="joinVectorLayer">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>The join layer.&lt;br&gt;A feature from this layer is joined to all the features from the the input layer that has this features as it's nearest neighbour.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Geometry type:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="joingeometrytypelabel">
-           <property name="font">
-            <font>
-             <italic>true</italic>
-            </font>
-           </property>
-           <property name="text">
-            <string>Unknown</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="joinSelected">
-           <property name="text">
-            <string>Selected only</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QCheckBox" name="use_indexapprox_cb">
-           <property name="toolTip">
-            <string>Uses an approximation of the geometry (bounding box) for the join.&lt;br/&gt;The result will also be approximate.</string>
-           </property>
-           <property name="text">
-            <string>Approximate geometries</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="use_index_nonpoint_cb">
-           <property name="toolTip">
-            <string>Use an index to speed up the join</string>
-           </property>
-           <property name="text">
-            <string>Use index</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Expanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <property name="spacing">
-            <number>1</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Join prefix:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="joinPrefix">
-             <property name="toolTip">
-              <string>The prefix used for the join layer attributes in the result layer.&lt;br&gt;Without a prefix, a join layer attribute that has the same name as an input layer attribute will not be included in the result layer.</string>
-             </property>
-             <property name="text">
-              <string>join_</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_3">
-      <property name="title">
-       <string>Output layer</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <property name="rightMargin">
-        <number>2</number>
-       </property>
-       <item>
-        <widget class="QLineEdit" name="outputDataset">
-         <property name="toolTip">
-          <string>The result layer that contains the join.&lt;br&gt;For each feature of the input layer, the output layer contains that feature with all it's attributes and all the attributes of the nearest feature in the join layer added.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <property name="spacing">
-          <number>1</number>
-         </property>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Neighbour distance field:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="distancefieldname">
-           <property name="toolTip">
-            <string>The field name used for the distance to the nearest neighbour.&lt;br&gt;Can not be the same as an existing field name.</string>
-           </property>
-           <property name="text">
-            <string>distance</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Expanding</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_1">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QGroupBox" name="groupBox_1">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Input vector layer</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
-       <number>5</number>
-      </property>
-      <property name="leftMargin">
        <number>2</number>
       </property>
       <property name="rightMargin">
        <number>2</number>
       </property>
       <item>
-       <widget class="QProgressBar" name="progressBar">
-        <property name="toolTip">
-         <string>Indicates the progress of the join operation</string>
-        </property>
-        <property name="value">
-         <number>24</number>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QComboBox" name="inputVectorLayer">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>The base layer for the join.&lt;br&gt;Each feature of this layer will be joined to the nearest neighbour from the join layer.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_inputgeom">
+          <property name="text">
+           <string>Geometry type:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="inputgeometrytypelabel">
+          <property name="font">
+           <font>
+            <italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string notr="true">Unknown</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="inputSelected">
+          <property name="text">
+           <string>Selected only</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QDialogButtonBox" name="button_box">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="toolTip">
-         <string>OK to run the join&lt;br&gt;Close to quit&lt;br&gt;Cancel to abort the join</string>
-        </property>
-        <property name="accessibleDescription">
-         <string/>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="standardButtons">
-         <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="helpButton">
-        <property name="toolTip">
-         <string>Get some help</string>
-        </property>
-        <property name="text">
-         <string>Help</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QCheckBox" name="approximate_input_geom_cb">
+          <property name="toolTip">
+           <string>Use approximate input geometries.&lt;br&gt;The result will also be approximate.&lt;br&gt;Could speed up the join considerably.</string>
+          </property>
+          <property name="text">
+           <string>Approximate geometries by centroids</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
      </layout>
-    </item>
-   </layout>
-  </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Join vector layer</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QComboBox" name="joinVectorLayer">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>The join layer.&lt;br&gt;A feature from this layer is joined to all the features from the the input layer that has this features as it's nearest neighbour.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Geometry type:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="joingeometrytypelabel">
+          <property name="font">
+           <font>
+            <italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>Unknown</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="joinSelected">
+          <property name="text">
+           <string>Selected only</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QCheckBox" name="use_indexapprox_cb">
+          <property name="toolTip">
+           <string>Uses an approximation of the geometry (bounding box) for the join.&lt;br/&gt;The result will also be approximate.</string>
+          </property>
+          <property name="text">
+           <string>Approximate geometries</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="use_index_nonpoint_cb">
+          <property name="toolTip">
+           <string>Use an index to speed up the join</string>
+          </property>
+          <property name="text">
+           <string>Use index</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <property name="spacing">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Join prefix:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="joinPrefix">
+            <property name="toolTip">
+             <string>The prefix used for the join layer attributes in the result layer.&lt;br&gt;Without a prefix, a join layer attribute that has the same name as an input layer attribute will not be included in the result layer.</string>
+            </property>
+            <property name="text">
+             <string>join_</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Output layer</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QLineEdit" name="outputDataset">
+        <property name="toolTip">
+         <string>The result layer that contains the join.&lt;br&gt;For each feature of the input layer, the output layer contains that feature with all it's attributes and all the attributes of the nearest feature in the join layer added.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <property name="spacing">
+         <number>1</number>
+        </property>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Neighbour distance field:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="distancefieldname">
+          <property name="toolTip">
+           <string>The field name used for the distance to the nearest neighbour.&lt;br&gt;Can not be the same as an existing field name.</string>
+          </property>
+          <property name="text">
+           <string>distance</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_1">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <property name="leftMargin">
+         <number>2</number>
+        </property>
+        <property name="rightMargin">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QProgressBar" name="progressBar">
+          <property name="toolTip">
+           <string>Indicates the progress of the join operation</string>
+          </property>
+          <property name="value">
+           <number>24</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDialogButtonBox" name="button_box">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>OK to run the join&lt;br&gt;Close to quit&lt;br&gt;Cancel to abort the join</string>
+          </property>
+          <property name="accessibleDescription">
+           <string/>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="standardButtons">
+           <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="helpButton">
+          <property name="toolTip">
+           <string>Get some help</string>
+          </property>
+          <property name="text">
+           <string>Help</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
