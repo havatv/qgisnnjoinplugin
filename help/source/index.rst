@@ -54,10 +54,11 @@ Functionality
 The result layer
 =================
 
-The result layer will contain all the attributes of both
-the *input* and *join* layers plus a new attribute that contains
-the distance between the joined features (the default name of the
-distance attribute is "distance", but can be changed by the user).
+The result layer is a memory layer that will contain all the
+attributes of both the *input* and *join* layers plus a new attribute
+that contains the distance between the joined features (the default
+name of the distance attribute is "distance", but can be changed by
+the user).
 The attributes from the *join* layer will get a prefix
 (the default is "join\_", but this can be set by the user).
 If a join prefix is not used, attributes from the join layer that
