@@ -54,10 +54,11 @@ Functionality
 The result layer
 =================
 
-The result layer will contain all the attributes of both
-the *input* and *join* layers plus a new attribute that contains
-the distance between the joined features (the default name of the
-distance attribute is "distance", but can be changed by the user).
+The result layer is a memory layer that will contain all the
+attributes of both the *input* and *join* layers plus a new attribute
+that contains the distance between the joined features (the default
+name of the distance attribute is "distance", but can be changed by
+the user).
 The attributes from the *join* layer will get a prefix
 (the default is "join\_", but this can be set by the user).
 If a join prefix is not used, attributes from the join layer that
@@ -218,7 +219,16 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 1.3.0
+The current version is 1.3.2
+
+- 1.3.2
+
+  - Fixed issue with high resolution monitors (#10)
+  - Input and join layers ordered as in the layers panel (#11)
+
+- 1.3.1
+
+  - Fixed a coordinate system issue (#6)
 
 - 1.3.0
 
