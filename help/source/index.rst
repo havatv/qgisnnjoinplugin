@@ -216,7 +216,13 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.0.3
+The current version is 3.0.4
+
+- 3.0.4
+
+  - pendingFields() changed to fields() (#13) and another issue
+    (message levels) caused by API changes.
+    UI improvement for neighbour distance field.
 
 - 3.0.3
 

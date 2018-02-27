@@ -24,7 +24,7 @@
 from os.path import dirname
 from os.path import join
 
-from qgis.core import QgsMessageLog, QgsProject
+from qgis.core import QgsMessageLog, QgsProject, Qgis
 from qgis.core import QgsMapLayer
 from qgis.core import QgsWkbTypes
 from qgis.gui import QgsMessageBar
@@ -100,7 +100,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
         #joinIndexCh.connect(self.layerchanged)
         joinIndexCh.connect(self.joinlayerchanged)
-        self.distancefieldname.editingFinished.connect(self.fieldchanged)
+        #self.distancefieldname.editingFinished.connect(self.fieldchanged)
+        self.distancefieldname.textChanged.connect(self.distfieldchanged)
         self.joinPrefix.editingFinished.connect(self.fieldchanged)
         theRegistry = QgsProject.instance()
         theRegistry.layersAdded.connect(self.layerlistchanged)
@@ -160,7 +161,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             # Has to be popped after the thread has finished (in
             # workerFinished).
             self.iface.messageBar().pushWidget(msgBar,
-                                               self.iface.messageBar().INFO)
+                                               Qgis.Info)
+#                                               self.iface.messageBar().INFO)
             self.messageBar = msgBar
             # start the worker in a new thread
             self.mythread = QThread(self)  # QT requires the "self"
@@ -205,7 +207,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             # report the result
             mem_layer = ret
             QgsMessageLog.logMessage(self.tr('NNJoin finished'),
-                                     self.NNJOIN, QgsMessageLog.INFO)
+                                     self.NNJOIN, Qgis.Info)
             mem_layer.dataProvider().updateExtents()
             mem_layer.commitChanges()
             self.layerlistchanging = True
@@ -230,7 +232,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def workerInfo(self, message_string):
         """Report an info message from the worker."""
         QgsMessageLog.logMessage(self.tr('Worker') + ': ' + message_string,
-                                 self.NNJOIN, QgsMessageLog.INFO)
+                                 self.NNJOIN, Qgis.Info)
 
     def fieldchanged(self, number=0):
         # If the layer list is being updated, don't do anything
@@ -238,6 +240,52 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             return
         self.updateui()
         # End of fieldchanged
+
+    def distfieldchanged(self, number=0):
+        ## If the layer list is being updated, don't do anything
+        #if self.layerlistchanging:
+        #    return
+
+        # Retrieve the input layer
+        layerindex = self.inputVectorLayer.currentIndex()
+        layerId = self.inputVectorLayer.itemData(layerindex)
+        inputlayer = QgsProject.instance().mapLayer(layerId)
+        # Retrieve the join layer
+        joinindex = self.joinVectorLayer.currentIndex()
+        joinlayerId = self.joinVectorLayer.itemData(joinindex)
+        joinlayer = QgsProject.instance().mapLayer(joinlayerId)
+        # Enable the OK button (if layers are OK)
+        if inputlayer is not None and joinlayer is not None:
+            self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+        if inputlayer is not None:
+            # Set the default background (white) for the distance field name
+            self.distancefieldname.setStyleSheet("background:#fff;")
+            # Check if the distance field name already is used
+            inputfields = inputlayer.fields().toList()
+            for infield in inputfields:
+                if infield.name() == self.distancefieldname.text():
+                    self.distancefieldname.setStyleSheet("background:#f00;")
+                    self.showInfo(
+                           "Distance field name conflict in input layer")
+                    if self.button_box.button(
+                                         QDialogButtonBox.Ok).isEnabled():
+                        self.button_box.button(
+                                   QDialogButtonBox.Ok).setEnabled(False)
+            if joinlayer is not None:
+                joinfields = joinlayer.fields().toList()
+                for joinfield in joinfields:
+                    if (self.joinPrefix.text() + joinfield.name() ==
+                                           self.distancefieldname.text()):
+                        self.distancefieldname.setStyleSheet(
+                                                       "background:#f00;")
+                        self.showInfo(
+                             "Distance field name conflict in join layer")
+                        if self.button_box.button(
+                                          QDialogButtonBox.Ok).isEnabled():
+                            self.button_box.button(
+                                    QDialogButtonBox.Ok).setEnabled(False)
+        #self.updateui()
+        # End of distfieldchanged
 
     def joinlayerchanged(self, number=0):
         # If the layer list is being updated, don't do anything
@@ -429,7 +477,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             # Set the default background (white) for the distance field name
             self.distancefieldname.setStyleSheet("background:#fff;")
             # Check if the distance field name already is used
-            inputfields = inputlayer.pendingFields().toList()
+            inputfields = inputlayer.fields().toList()
             for infield in inputfields:
                 if infield.name() == self.distancefieldname.text():
                     self.distancefieldname.setStyleSheet("background:#f00;")
@@ -441,7 +489,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                    QDialogButtonBox.Ok).setEnabled(False)
                     break
             if joinlayer is not None:
-                joinfields = joinlayer.pendingFields().toList()
+                joinfields = joinlayer.fields().toList()
                 for joinfield in joinfields:
                     if (self.joinPrefix.text() + joinfield.name() ==
                                            self.distancefieldname.text()):
@@ -504,26 +552,26 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def showError(self, text):
         """Show an error."""
         self.iface.messageBar().pushMessage(self.tr('Error'), text,
-                                            level=QgsMessageBar.CRITICAL,
+                                            level=Qgis.Critical,
                                             duration=3)
         QgsMessageLog.logMessage('Error: ' + text, self.NNJOIN,
-                                 QgsMessageLog.CRITICAL)
+                                 Qgis.Critical)
 
     def showWarning(self, text):
         """Show a warning."""
         self.iface.messageBar().pushMessage(self.tr('Warning'), text,
-                                            level=QgsMessageBar.WARNING,
+                                            level=Qgis.Warning,
                                             duration=2)
         QgsMessageLog.logMessage('Warning: ' + text, self.NNJOIN,
-                                 QgsMessageLog.WARNING)
+                                 Qgis.Warning)
 
     def showInfo(self, text):
         """Show info."""
         self.iface.messageBar().pushMessage(self.tr('Info'), text,
-                                            level=QgsMessageBar.INFO,
+                                            level=Qgis.Info,
                                             duration=2)
         QgsMessageLog.logMessage('Info: ' + text, self.NNJOIN,
-                                 QgsMessageLog.INFO)
+                                 Qgis.Info)
 
     def help(self):
         QDesktopServices.openUrl(QUrl.fromLocalFile(

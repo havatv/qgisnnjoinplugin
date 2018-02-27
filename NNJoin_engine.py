@@ -213,10 +213,10 @@ class Worker(QtCore.QObject):
                 geomttext = (geomttext + "?crs=" +
                              str(self.inpvl.crs().authid()))
             # Retrieve the fields from the input layer
-            outfields = self.inpvl.pendingFields().toList()
+            outfields = self.inpvl.fields().toList()
             # Retrieve the fields from the join layer
-            if self.joinvl.pendingFields() is not None:
-                jfields = self.joinvl.pendingFields().toList()
+            if self.joinvl.fields() is not None:
+                jfields = self.joinvl.fields().toList()
                 for joinfield in jfields:
                     outfields.append(QgsField(self.joinprefix +
                                      str(joinfield.name()),
