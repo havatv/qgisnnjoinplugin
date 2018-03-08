@@ -216,7 +216,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.0.4
+The current version is 3.0.5
+
+- 3.0.5
+
+  - Qt4 import in resources_rc.py removed (#14)
 
 - 3.0.4
 
