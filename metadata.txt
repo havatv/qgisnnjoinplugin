@@ -9,7 +9,7 @@ email=havard.tveite@nmbu.no
 about=The NNPlugin joins two vector layers (the input and the join layer) based on nearest neighbour relationships.  All geometry type combinations are supported.  A feature from the input layer is joined to the nearest feature in the join layer.  The result of the join is a new vector layer with the same geometry type and coordinate reference system as the input layer.  Joining layers with different Coordinate Reference Systems (CRS) is supported, as long as the join layer coordinate system is a projected CRS.  The join and distance calculations is performed using the join layer CRS.  Self joins are supported. For self joins, each feature in the layer is joined to its nearest neighbour within the layer.  A spatial index (QgsSpatialIndex) on the join layer is used to speed up the join for layers with non-multi-geometry types.
 
 changelog=3.0.5 (2018-03)
-    - Qt4 imports still present (#14)
+    - Qt4 import in resources_rc.py removed (#14)
     3.0.4 (2018-02)
     - pendingFields() changed to fields() (#13) and another issue (message levels) caused by API changes.  UI improvement for neighbour distance field.
     3.0.3 (2017-08)

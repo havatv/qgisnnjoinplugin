@@ -26,6 +26,7 @@ from qgis.core import QgsWkbTypes
 from qgis.core import QgsVectorLayer, QgsFeature, QgsSpatialIndex
 from qgis.core import QgsFeatureRequest, QgsField
 from qgis.core import QgsRectangle, QgsCoordinateTransform
+#from qgis.core import QgsCoordinateTransformContext
 
 #QGIS 3
 from qgis.PyQt import QtCore
@@ -403,6 +404,9 @@ class Worker(QtCore.QObject):
             try:
                 inputgeom.transform(QgsCoordinateTransform(
                     self.inpvl.crs(), self.joinvl.crs()))
+                #transcontext = QgsCoordinateTransformContext()
+                #inputgeom.transform(QgsCoordinateTransform(
+                #    self.inpvl.crs(), self.joinvl.crs(), transcontext))
             except:
                 import traceback
                 self.error.emit(self.tr('CRS Transformation error!') +
