@@ -216,7 +216,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.0.5
+The current version is 3.0.6
+
+- 3.0.6
+
+  - QgsCoordinateTransform issue caused by API change (#15)
 
 - 3.0.5
 
