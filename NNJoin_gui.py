@@ -28,7 +28,7 @@ from qgis.core import QgsMessageLog, QgsProject, Qgis
 from qgis.core import QgsMapLayer
 from qgis.core import QgsWkbTypes
 from qgis.gui import QgsMessageBar
-#from qgis.utils import showPluginHelp
+# from qgis.utils import showPluginHelp
 
 # QGIS 3
 from qgis.PyQt import uic
@@ -86,7 +86,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
 
         # Connect signals
         okButton.clicked.connect(self.startWorker)
-        #self.cancelButton.clicked.connect(self.killWorker)
+        # self.cancelButton.clicked.connect(self.killWorker)
         closeButton.clicked.connect(self.reject)
         helpButton.clicked.connect(self.help)
         self.approximate_input_geom_cb.stateChanged['int'].connect(
@@ -98,9 +98,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         inpIndexCh = self.inputVectorLayer.currentIndexChanged['QString']
         inpIndexCh.connect(self.layerchanged)
         joinIndexCh = self.joinVectorLayer.currentIndexChanged['QString']
-        #joinIndexCh.connect(self.layerchanged)
+        # joinIndexCh.connect(self.layerchanged)
         joinIndexCh.connect(self.joinlayerchanged)
-        #self.distancefieldname.editingFinished.connect(self.fieldchanged)
+        # self.distancefieldname.editingFinished.connect(self.fieldchanged)
         self.distancefieldname.textChanged.connect(self.distfieldchanged)
         self.joinPrefix.editingFinished.connect(self.fieldchanged)
         theRegistry = QgsProject.instance()
@@ -137,7 +137,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             outputlayername = self.outputDataset.text()
             approximateinputgeom = self.approximate_input_geom_cb.isChecked()
             joinprefix = self.joinPrefix.text()
-            #useindex = True
+            # useindex = True
             useindex = self.use_index_nonpoint_cb.isChecked()
             useindexapproximation = self.use_indexapprox_cb.isChecked()
             distancefieldname = self.distancefieldname.text()
@@ -155,14 +155,14 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.aprogressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             acancelButton = QPushButton()
             acancelButton.setText(self.CANCEL)
-            #acancelButton.clicked.connect(self.killWorker)
+            # acancelButton.clicked.connect(self.killWorker)
             msgBar.layout().addWidget(self.aprogressBar)
             msgBar.layout().addWidget(acancelButton)
             # Has to be popped after the thread has finished (in
             # workerFinished).
             self.iface.messageBar().pushWidget(msgBar,
                                                Qgis.Info)
-#                                               self.iface.messageBar().INFO)
+            #                      self.iface.messageBar().INFO)
             self.messageBar = msgBar
             # start the worker in a new thread
             self.mythread = QThread(self)  # QT requires the "self"
@@ -171,20 +171,20 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             self.worker.progress.connect(self.aprogressBar.setValue)
             self.worker.finished.connect(self.workerFinished)
             self.worker.error.connect(self.workerError)
-            self.cancelButton.clicked.connect(self.worker.kill)  # Must come
-                                                      # before movetothread
+            # Must come before movetothread:
+            self.cancelButton.clicked.connect(self.worker.kill)
             acancelButton.clicked.connect(self.worker.kill)
             self.worker.finished.connect(self.worker.deleteLater)
             self.worker.finished.connect(self.mythread.quit)
-            #self.worker.error.connect(self.worker.deleteLater)
-            #self.worker.error.connect(self.mythread.quit)
-            self.worker.moveToThread(self.mythread)  # Must come before
-                                                     # thread.started.connect!
+            # self.worker.error.connect(self.worker.deleteLater)
+            # self.worker.error.connect(self.mythread.quit)
+            # Must come before thread.started.connect!:
+            self.worker.moveToThread(self.mythread)
             self.mythread.started.connect(self.worker.run)
             self.mythread.finished.connect(self.mythread.deleteLater)
             self.mythread.start()
-            #self.thread = thread
-            #self.worker = worker
+            # self.thread = thread
+            # self.worker = worker
             self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
             self.button_box.button(QDialogButtonBox.Close).setEnabled(False)
             self.button_box.button(QDialogButtonBox.Cancel).setEnabled(True)
@@ -193,7 +193,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                               " input layer - doing a self join!")
         except:
             import traceback
-            self.showError(traceback.format_exc())
+            self.showError("Error starting worker: " + traceback.format_exc())
         else:
             pass
         # End of startworker
@@ -242,9 +242,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # End of fieldchanged
 
     def distfieldchanged(self, number=0):
-        ## If the layer list is being updated, don't do anything
-        #if self.layerlistchanging:
-        #    return
+        # If the layer list is being updated, don't do anything
+        # if self.layerlistchanging:
+        #     return
 
         # Retrieve the input layer
         layerindex = self.inputVectorLayer.currentIndex()
@@ -284,7 +284,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                                           QDialogButtonBox.Ok).isEnabled():
                             self.button_box.button(
                                     QDialogButtonBox.Ok).setEnabled(False)
-        #self.updateui()
+        # self.updateui()
         # End of distfieldchanged
 
     def joinlayerchanged(self, number=0):
@@ -392,8 +392,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def updateui(self):
         """Do the necessary updates after a layer selection has
            been changed."""
-        #if self.layerlistchanged:
-        #    return
+        # if self.layerlistchanged:
+        #     return
         # Update the output dataset name
         self.outputDataset.setText(self.inputVectorLayer.currentText() +
                                    '_' + self.joinVectorLayer.currentText())
@@ -456,8 +456,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             # Update the use index approximation checkbox:
             if ((wkbType == QgsWkbTypes.Point or
                  wkbType == QgsWkbTypes.Point25D or
-                 self.approximate_input_geom_cb.isChecked())
-                and not (joinwkbType == QgsWkbTypes.Point or
+                 self.approximate_input_geom_cb.isChecked()) and
+                not (joinwkbType == QgsWkbTypes.Point or
                          joinwkbType == QgsWkbTypes.Point25D)):
                 # For non-point join layers and point input layers,
                 # the user is allowed to choose an approximation (the
@@ -545,9 +545,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
 
     def killWorker(self):
         """Kill the worker thread."""
-        #if self.worker is not None:
-        #    self.showInfo(self.tr('Killing worker'))
-        #    self.worker.kill()
+        # if self.worker is not None:
+        #     self.showInfo(self.tr('Killing worker'))
+        #     self.worker.kill()
 
     def showError(self, text):
         """Show an error."""
@@ -576,7 +576,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def help(self):
         QDesktopServices.openUrl(QUrl.fromLocalFile(
                          self.plugin_dir + "/help/html/index.html"))
-        #showPluginHelp(None, "help/html/index")
+        # showPluginHelp(None, "help/html/index")
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.

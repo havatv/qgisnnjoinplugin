@@ -23,21 +23,21 @@
 import os.path
 # QGIS imports
 from qgis.core import QgsProject, QgsMapLayer
-#from qgis.core import QgsMapLayerRegistry, QgsMapLayer
-#from qgis.core import QGis
+# from qgis.core import QgsMapLayerRegistry, QgsMapLayer
+# from qgis.core import QGis
 from qgis.core import QgsWkbTypes
 
-#import processing
+# import processing
 
-#QGIS 3
+# QGIS 3
 from qgis.PyQt.QtCore import QSettings, QCoreApplication, QTranslator
 from qgis.PyQt.QtCore import qVersion
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from qgis.PyQt.QtGui import QIcon
 
-#QGIS 2
-#from PyQt4.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
-#from PyQt4.QtGui import QAction, QMessageBox, QIcon
+# QGIS 2
+# from PyQt4.QtCore import QSettings, QCoreApplication, QTranslator, qVersion
+# from PyQt4.QtGui import QAction, QMessageBox, QIcon
 
 # Plugin imports
 import sys
@@ -80,8 +80,8 @@ class NNJoin(object):
         self.NNJOINAMP = self.tr('&NNJoin')
         self.toolbar = None
         # Separate toolbar for NNJoin:
-        #self.toolbar = self.iface.addToolBar(self.NNJOIN)
-        #self.toolbar.setObjectName(self.NNJOIN)
+        # self.toolbar = self.iface.addToolBar(self.NNJOIN)
+        # self.toolbar.setObjectName(self.NNJOIN)
 
         # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -160,15 +160,15 @@ class NNJoin(object):
         for layerdescription in layerslist:
             self.dlg.inputVectorLayer.addItem(layerdescription[0],
                                         layerdescription[1])
-        #for alayer in self.iface.legendInterface().layers():
-        #for alayer in layers:
-        #    if alayer.type() == QgsMapLayer.VectorLayer:
-        #        self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
+        # for alayer in self.iface.legendInterface().layers():
+        # for alayer in layers:
+        #     if alayer.type() == QgsMapLayer.VectorLayer:
+        #         self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
         self.dlg.joinVectorLayer.clear()
-        #for alayer in self.iface.legendInterface().layers():
-        #for alayer in layers:
-        #    if alayer.type() == QgsMapLayer.VectorLayer:
-        #        self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
+        # for alayer in self.iface.legendInterface().layers():
+        # for alayer in layers:
+        #     if alayer.type() == QgsMapLayer.VectorLayer:
+        #         self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
         # Add the layers to the layers combobox
         for layerdescription in layerslist:
             self.dlg.joinVectorLayer.addItem(layerdescription[0],

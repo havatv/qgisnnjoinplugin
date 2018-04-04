@@ -26,10 +26,10 @@ from qgis.core import QgsWkbTypes
 from qgis.core import QgsVectorLayer, QgsFeature, QgsSpatialIndex
 from qgis.core import QgsFeatureRequest, QgsField
 from qgis.core import QgsRectangle, QgsCoordinateTransform
-#from qgis.core import QgsCoordinateTransformContext
+# from qgis.core import QgsCoordinateTransformContext
 from qgis.core import QgsProject
 
-#QGIS 3
+# QGIS 3
 from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
 
@@ -181,7 +181,7 @@ class Worker(QtCore.QObject):
             # This is not used for anything yet
             self.inputmulti = False
             if self.selectedinonly:
-                #feats = self.inpvl.selectedFeaturesIterator()
+                # feats = self.inpvl.selectedFeaturesIterator()
                 feats = self.inpvl.getSelectedFeatures()
             else:
                 feats = self.inpvl.getFeatures()
@@ -236,9 +236,9 @@ class Worker(QtCore.QObject):
                     if field.name() == self.distancename:
                         self.status.emit(
                               'Distance field already exists - renaming!')
-                        #self.abort = True
-                        #self.finished.emit(False, None)
-                        #break
+                        # self.abort = True
+                        # self.finished.emit(False, None)
+                        # break
                         collission = True
                         self.distancename = self.distancename + '1'
             outfields.append(QgsField(self.distancename, QVariant.Double))
@@ -275,7 +275,7 @@ class Worker(QtCore.QObject):
                 self.increment = self.feature_count // 1000
                 self.joinlind = QgsSpatialIndex()
                 if self.selectedjoonly:
-                    #for feat in self.joinvl.selectedFeaturesIterator():
+                    # for feat in self.joinvl.selectedFeaturesIterator():
                     for feat in self.joinvl.getSelectedFeatures():
                         # Allow user abort
                         if self.abort is True:
@@ -292,7 +292,7 @@ class Worker(QtCore.QObject):
                 self.status.emit('Join layer index created!')
                 self.processed = 0
                 self.percentage = 0
-                #self.calculate_progress()
+                # self.calculate_progress()
             # Does the join layer contain multi geometries?
             # Try to check the first feature
             # This is not used for anything yet
@@ -403,21 +403,21 @@ class Worker(QtCore.QObject):
         # transform the input feature!
         if (self.inpvl.crs() != self.joinvl.crs()):
             try:
-                #inputgeom.transform(QgsCoordinateTransform(
-                #    self.inpvl.crs(), self.joinvl.crs(), None))
-                #transcontext = QgsCoordinateTransformContext()
-                #inputgeom.transform(QgsCoordinateTransform(
-                #    self.inpvl.crs(), self.joinvl.crs(), transcontext))
+                # inputgeom.transform(QgsCoordinateTransform(
+                #     self.inpvl.crs(), self.joinvl.crs(), None))
+                # transcontext = QgsCoordinateTransformContext()
+                # inputgeom.transform(QgsCoordinateTransform(
+                #     self.inpvl.crs(), self.joinvl.crs(), transcontext))
                 inputgeom.transform(QgsCoordinateTransform(
-                    self.inpvl.crs(), self.joinvl.crs(), QgsProject.instance()))
-
+                    self.inpvl.crs(), self.joinvl.crs(),
+                    QgsProject.instance()))
             except:
                 import traceback
                 self.error.emit(self.tr('CRS Transformation error!') +
                                 ' - ' + traceback.format_exc())
                 self.abort = True
                 return
-        ## Find the closest feature!
+        # Find the closest feature!
         nnfeature = None
         mindist = float("inf")
         if (self.approximateinputgeom or
@@ -571,10 +571,10 @@ class Worker(QtCore.QObject):
                 maxx = inpbbox.xMaximum() + mindist
                 miny = inpbbox.yMinimum() - mindist
                 maxy = inpbbox.yMaximum() + mindist
-                #minx = min(inpbbox.xMinimum(), centroidgeom.x() - mindist)
-                #maxx = max(inpbbox.xMaximum(), centroidgeom.x() + mindist)
-                #miny = min(inpbbox.yMinimum(), centroidgeom.y() - mindist)
-                #maxy = max(inpbbox.yMaximum(), centroidgeom.y() + mindist)
+                # minx = min(inpbbox.xMinimum(), centroidgeom.x() - mindist)
+                # maxx = max(inpbbox.xMaximum(), centroidgeom.x() + mindist)
+                # miny = min(inpbbox.yMinimum(), centroidgeom.y() - mindist)
+                # maxy = max(inpbbox.yMaximum(), centroidgeom.y() + mindist)
                 searchrectangle = QgsRectangle(minx, miny, maxx, maxy)
                 # Fetch the candidate join geometries
                 closefids = self.joinlind.intersects(searchrectangle)
@@ -632,12 +632,12 @@ class Worker(QtCore.QObject):
             outFeat.setGeometry(infeature.geometry())
             # Use the modified input layer geometry (could be
             # centroid)
-            #outFeat.setGeometry(inputgeom)
+            # outFeat.setGeometry(inputgeom)
             # Add the attributes
             outFeat.setAttributes(attrs)
             self.calculate_progress()
             self.features.append(outFeat)
-            #self.mem_joinl.dataProvider().addFeatures([outFeat])
+            # self.mem_joinl.dataProvider().addFeatures([outFeat])
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
