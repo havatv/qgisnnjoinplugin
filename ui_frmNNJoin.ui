@@ -73,6 +73,19 @@
          </widget>
         </item>
         <item>
+         <spacer name="horizontalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <widget class="QCheckBox" name="inputSelected">
           <property name="text">
            <string>Selected only</string>
@@ -158,6 +171,19 @@
          </widget>
         </item>
         <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <widget class="QCheckBox" name="joinSelected">
           <property name="text">
            <string>Selected only</string>
@@ -205,28 +231,38 @@
          </spacer>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <property name="spacing">
-           <number>1</number>
+         <widget class="QCheckBox" name="exclude_containing_poly_cb">
+          <property name="enabled">
+           <bool>true</bool>
           </property>
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Join prefix:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="joinPrefix">
-            <property name="toolTip">
-             <string>The prefix used for the join layer attributes in the result layer.&lt;br&gt;Without a prefix, a join layer attribute that has the same name as an input layer attribute will not be included in the result layer.</string>
-            </property>
-            <property name="text">
-             <string>join_</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+          <property name="text">
+           <string>Exclude containing polygon</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <property name="spacing">
+         <number>1</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Join prefix:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="joinPrefix">
+          <property name="toolTip">
+           <string>The prefix used for the join layer attributes in the result layer.&lt;br&gt;Without a prefix, a join layer attribute that has the same name as an input layer attribute will not be included in the result layer.</string>
+          </property>
+          <property name="text">
+           <string>join_</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

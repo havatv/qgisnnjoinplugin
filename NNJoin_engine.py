@@ -86,7 +86,8 @@ class Worker(QtCore.QObject):
                  usejoinlayerapproximation=False,
                  usejoinlayerindex=True,
                  selectedinputonly=True,
-                 selectedjoinonly=True):
+                 selectedjoinonly=True,
+                 excludecontaining=True):
         """Initialise.
 
         Arguments:
@@ -107,6 +108,11 @@ class Worker(QtCore.QObject):
                              join?
         usejoinlayerindex -- (boolean) should an index for the join
                              layer be used.
+        selectedinputonly -- Only selected features from the input
+                             layer
+        selectedjoinonly -- Only selected features from the join
+                            layer
+        excludecontaining -- exclude the containing polygon for points
         """
 
         QtCore.QObject.__init__(self)  # Essential!
@@ -122,6 +128,8 @@ class Worker(QtCore.QObject):
         self.usejoinlayerapprox = usejoinlayerapproximation
         self.selectedinonly = selectedinputonly
         self.selectedjoonly = selectedjoinonly
+        self.excludecontaining = excludecontaining
+
         # Check if the layers are the same (self join)
         self.selfjoin = False
         if self.inpvl is self.joinvl:
@@ -488,6 +496,23 @@ class Worker(QtCore.QObject):
                     if (nearestindexid == infeatureid and
                                   len(nearestindexes) > 1):
                         nearestindexid = nearestindexes[1]
+
+                # If exclude containing, check for containment
+                if self.excludecontaining:
+                    self.status.emit('Check containing!')
+                    nearestindexes = self.joinlind.nearestNeighbor(
+                                           inputgeom.asPoint(), 2)
+                    nearestindexid = nearestindexes[0]
+                    # Seems to respect selection...?
+                    nnfeature = next(self.joinvl.getFeatures(
+                        QgsFeatureRequest(nearestindexid)))
+                    # Check for containment
+                    if nnfeature.geometry().contains(inputgeom.asPoint()):
+                        self.status.emit('Contained!')  # Works!
+                        if len(nearestindexes) > 1:
+                            # self.status.emit('number of features > 1!')
+                            nearestindexid = nearestindexes[1]
+                    ### ???????
                 if self.selectedjoonly:
                     nnfeature = next(self.joinvl.getSelectedFeatures(
                         QgsFeatureRequest(nearestindexid)))
@@ -508,6 +533,15 @@ class Worker(QtCore.QObject):
                     # Check for self join and same feature
                     if self.selfjoin and closefid == infeatureid:
                         continue
+                    # If exclude containing, check for containment  ## funker ikke helt...
+                    if self.excludecontaining:
+                        # Seems to respect selection...?
+                        closefeature = next(self.joinvl.getFeatures(
+                            QgsFeatureRequest(closefid)))
+                        # Check for containment
+                        if closefeature.geometry().contains(inputgeom.asPoint()):
+                            self.status.emit('Contained - eliminate!')  # Works!
+                            continue
                     if self.selectedjoonly:
                         closef = next(self.joinvl.getSelectedFeatures(
                             QgsFeatureRequest(closefid)))
@@ -519,6 +553,7 @@ class Worker(QtCore.QObject):
                         mindist = thisdistance
                         nnfeature = closef
                     if mindist == 0:
+                        self.status.emit('Mindist = 0!')
                         break
             else:
                 # Join with no index use

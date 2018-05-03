@@ -143,11 +143,13 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             distancefieldname = self.distancefieldname.text()
             selectedinputonly = self.inputSelected.isChecked()
             selectedjoinonly = self.joinSelected.isChecked()
+            excludecontaining = self.exclude_containing_poly_cb.isChecked()
             # create a new worker instance
             self.worker = Worker(inputlayer, joinlayer, outputlayername,
                             joinprefix, distancefieldname,
                             approximateinputgeom, useindexapproximation,
-                            useindex, selectedinputonly, selectedjoinonly)
+                            useindex, selectedinputonly, selectedjoinonly,
+                            excludecontaining)
             # configure the QgsMessageBar
             msgBar = self.iface.messageBar().createMessage(
                                                 self.tr('Joining'), '')
@@ -453,9 +455,10 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.use_index_nonpoint_cb.setCheckState(Qt.Unchecked)
                 self.use_index_nonpoint_cb.setVisible(False)
                 self.use_index_nonpoint_cb.blockSignals(False)
+            # This does not work!!????
             # Update the use index approximation checkbox:
-            if ((wkbType == QgsWkbTypes.Point or
-                 wkbType == QgsWkbTypes.Point25D or
+            if (((wkbType == QgsWkbTypes.Point) or
+                 (wkbType == QgsWkbTypes.Point25D) or
                  self.approximate_input_geom_cb.isChecked()) and
                 not (joinwkbType == QgsWkbTypes.Point or
                          joinwkbType == QgsWkbTypes.Point25D)):
@@ -474,6 +477,25 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.use_indexapprox_cb.setCheckState(Qt.Unchecked)
                 self.use_indexapprox_cb.setVisible(False)
                 self.use_indexapprox_cb.blockSignals(False)
+
+            # Update the exclude containing polygon checkbox:
+            if ((wkbType == QgsWkbTypes.Point or
+                 wkbType == QgsWkbTypes.Point25D or
+                 self.approximate_input_geom_cb.isChecked()) and
+                (joinwkbType == QgsWkbTypes.Polygon or
+                 joinwkbType == QgsWkbTypes.Polygon25D)):
+                # For polygon join layers and point input layers,
+                # the user is allowed to choose to exclude the
+                # containing polygon in the join.
+                self.exclude_containing_poly_cb.blockSignals(True)
+                self.exclude_containing_poly_cb.setVisible(True)
+                self.exclude_containing_poly_cb.blockSignals(False)
+            else:
+                self.exclude_containing_poly_cb.blockSignals(True)
+                self.exclude_containing_poly_cb.setCheckState(Qt.Unchecked)
+                self.exclude_containing_poly_cb.setVisible(False)
+                self.exclude_containing_poly_cb.blockSignals(False)
+
             # Set the default background (white) for the distance field name
             self.distancefieldname.setStyleSheet("background:#fff;")
             # Check if the distance field name already is used
