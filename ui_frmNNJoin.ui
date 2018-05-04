@@ -235,8 +235,11 @@
           <property name="enabled">
            <bool>true</bool>
           </property>
+          <property name="toolTip">
+           <string>Avoids joining geometries that have a contained relation</string>
+          </property>
           <property name="text">
-           <string>Exclude containing polygon</string>
+           <string>Exclude containing</string>
           </property>
          </widget>
         </item>

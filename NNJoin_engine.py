@@ -401,6 +401,7 @@ class Worker(QtCore.QObject):
         infeature = feat
         # Get the feature ID
         infeatureid = infeature.id()
+        self.status.emit('**infeatureid: ' + str(infeatureid))
         # Get the feature geometry
         inputgeom = infeature.geometry()
         # Shall approximate input geometries be used?
@@ -428,65 +429,66 @@ class Worker(QtCore.QObject):
         # Find the closest feature!
         nnfeature = None
         mindist = float("inf")
+
+        # If the input layer's geometry type is point, or has been
+        # approximated to point (centroid), then a join index will
+        # always be used.
         if (self.approximateinputgeom or
                 self.inpvl.wkbType() == QgsWkbTypes.Point or
                 self.inpvl.wkbType() == QgsWkbTypes.Point25D):
-            # The input layer's geometry type is point, or has been
-            # approximated to point (centroid).
-            # Then a join index will always be used.
+            # Are there points on the join side?
+            # Then the index nearest neighbour function is sufficient
             if (self.usejoinlayerapprox or
                     self.joinvl.wkbType() == QgsWkbTypes.Point or
                     self.joinvl.wkbType() == QgsWkbTypes.Point25D):
-                # The join index nearest neighbour function can
-                # be used without refinement.
+                # Is it a self join?
                 if self.selfjoin:
-                    # Self join!
-                    # Have to get the two nearest neighbours
+                    # Have to consider the two nearest neighbours
                     nearestids = self.joinlind.nearestNeighbor(
                                              inputgeom.asPoint(), 2)
-                    if nearestids[0] == infeatureid and len(nearestids) > 1:
+                    fch = 0  # Which of the two features to choose
+                    if (nearestids[0] == infeatureid and
+                                               len(nearestids) > 1):
                         # The first feature is the same as the input
                         # feature, so choose the second one
-                        if self.selectedjoonly:
-                            nnfeature = next(
-                                self.joinvl.getSelectedFeatures(
-                                    QgsFeatureRequest(nearestids[1])))
-                        else:
-                            nnfeature = next(self.joinvl.getFeatures(
-                                QgsFeatureRequest(nearestids[1])))
+                        fch = 1
+                    # Get the feature!
+                    if False:
+                    #if self.selectedjoonly:
+                        nnfeature = next(
+                            self.joinvl.getSelectedFeatures(
+                                QgsFeatureRequest(nearestids[fch])))
                     else:
-                        # The first feature is not the same as the
-                        # input feature, so choose it
-                        if self.selectedjoonly:
-                            nnfeature = next(
-                                self.joinvl.getSelectedFeatures(
-                                    QgsFeatureRequest(nearestids[0])))
-                        else:
-                            nnfeature = next(self.joinvl.getFeatures(
-                                QgsFeatureRequest(nearestids[0])))
+                        nnfeature = next(self.joinvl.getFeatures(
+                            QgsFeatureRequest(nearestids[fch])))
+                # Not a self join
                 else:
                     # Not a self join, so we can search for only the
                     # nearest neighbour (1)
                     nearestid = self.joinlind.nearestNeighbor(
                                            inputgeom.asPoint(), 1)[0]
-                    if self.selectedjoonly:
+                    # Get the feature!
+                    if False:
+                    #if self.selectedjoonly:
                         nnfeature = next(self.joinvl.getSelectedFeatures(
                                  QgsFeatureRequest(nearestid)))
                     else:
                         nnfeature = next(self.joinvl.getFeatures(
                                  QgsFeatureRequest(nearestid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
+            # Not points on the join side
+            # Handle common (non multi) non-point geometries
             elif (self.joinvl.wkbType() == QgsWkbTypes.Polygon or
                   self.joinvl.wkbType() == QgsWkbTypes.Polygon25D or
                   self.joinvl.wkbType() == QgsWkbTypes.LineString or
                   self.joinvl.wkbType() == QgsWkbTypes.LineString25D):
                 # Use the join layer index to speed up the join when
                 # the join layer geometry type is polygon or line
-                # and the input layer geometry type is point or an
-                # approximation (point)
+                # and the input layer geometry type is point or a
+                # point approximation
                 nearestindexid = self.joinlind.nearestNeighbor(
                     inputgeom.asPoint(), 1)[0]
-                # Check for self join
+                # Check for self join (possible if approx input)
                 if self.selfjoin and nearestindexid == infeatureid:
                     # Self join and same feature, so get the
                     # first two neighbours
@@ -498,30 +500,45 @@ class Worker(QtCore.QObject):
                         nearestindexid = nearestindexes[1]
 
                 # If exclude containing, check for containment
+                # Does not handle cases where multiple polygons contain
+                # the point!!!???
                 if self.excludecontaining:
                     self.status.emit('Check containing!')
                     nearestindexes = self.joinlind.nearestNeighbor(
                                            inputgeom.asPoint(), 2)
                     nearestindexid = nearestindexes[0]
                     # Seems to respect selection...?
-                    nnfeature = next(self.joinvl.getFeatures(
+                    nearfeature = next(self.joinvl.getFeatures(
                         QgsFeatureRequest(nearestindexid)))
-                    # Check for containment
-                    if nnfeature.geometry().contains(inputgeom.asPoint()):
-                        self.status.emit('Contained!')  # Works!
+                    # Check for containment  # Works!
+                    if nearfeature.geometry().contains(inputgeom.asPoint()):
+                        self.status.emit('Contained! - ' + str(nearestindexid))
                         if len(nearestindexes) > 1:
-                            # self.status.emit('number of features > 1!')
                             nearestindexid = nearestindexes[1]
+                            self.status.emit('Continue to - ' + str(nearestindexid))
+                        else:
+                            nearestindexid = nearestindexes[0]
+                            self.status.emit('number of features <= 1!')
                     ### ???????
-                if self.selectedjoonly:
+                # Get the feature!
+                if False:
+                #if self.selectedjoonly:
+                    # Does not get the correct feature!
                     nnfeature = next(self.joinvl.getSelectedFeatures(
                         QgsFeatureRequest(nearestindexid)))
                 else:
+                    # This seems to work also in the presence of selections
                     nnfeature = next(self.joinvl.getFeatures(
                         QgsFeatureRequest(nearestindexid)))
+                self.status.emit('Join feature: ' + str(nnfeature.id()))
                 mindist = inputgeom.distance(nnfeature.geometry())
+                if mindist == 0:
+                    insidep = nnfeature.geometry().contains(inputgeom.asPoint())
+                    self.status.emit('  0 distance! - ' + str(nearestindexid))
+                    self.status.emit('  Inside: ' + str(insidep))
                 px = inputgeom.asPoint().x()
                 py = inputgeom.asPoint().y()
+                # Search the neighbourhood
                 closefids = self.joinlind.intersects(QgsRectangle(
                     px - mindist,
                     py - mindist,
@@ -540,9 +557,10 @@ class Worker(QtCore.QObject):
                             QgsFeatureRequest(closefid)))
                         # Check for containment
                         if closefeature.geometry().contains(inputgeom.asPoint()):
-                            self.status.emit('Contained - eliminate!')  # Works!
+                            self.status.emit('Contained - eliminate! - ' + str(closefid))  # Works!
                             continue
-                    if self.selectedjoonly:
+                    if False:
+                    #if self.selectedjoonly:
                         closef = next(self.joinvl.getSelectedFeatures(
                             QgsFeatureRequest(closefid)))
                     else:
@@ -553,8 +571,9 @@ class Worker(QtCore.QObject):
                         mindist = thisdistance
                         nnfeature = closef
                     if mindist == 0:
-                        self.status.emit('Mindist = 0!')
+                        self.status.emit('  Mindist = 0!')
                         break
+            # Other geometry on the join side
             else:
                 # Join with no index use
                 # Go through all the features from the join layer!
@@ -574,8 +593,8 @@ class Worker(QtCore.QObject):
                     # For 0 distance, settle with the first feature
                     if mindist == 0:
                         break
+        # non (simple) point input geometries (could be multipoint)
         else:
-            # non-simple point input geometries (could be multipoint)
             if (self.nonpointexactindex):
                 # Use the spatial index on the join layer (default).
                 # First we do an approximate search
@@ -593,7 +612,9 @@ class Worker(QtCore.QObject):
                     nearestid = nearestindexes[0]
                     if nearestid == infeatureid and len(nearestindexes) > 1:
                         nearestid = nearestindexes[1]
-                if self.selectedjoonly:
+                # Get the feature!
+                if False:
+                #if self.selectedjoonly:
                     nnfeature = next(self.joinvl.getSelectedFeatures(
                         QgsFeatureRequest(nearestid)))
                 else:
@@ -621,7 +642,8 @@ class Worker(QtCore.QObject):
                     # Check for self join and identical feature
                     if self.selfjoin and closefid == infeatureid:
                         continue
-                    if self.selectedjoonly:
+                    if False:
+                    #if self.selectedjoonly:
                         closef = next(self.joinvl.getSelectedFeatures(
                             QgsFeatureRequest(closefid)))
                     else:
@@ -654,6 +676,7 @@ class Worker(QtCore.QObject):
                     if mindist == 0:
                         break
         if not self.abort:
+            self.status.emit('Near feature - ' + str(nnfeature.id()))
             # Collect the attribute
             atMapA = infeature.attributes()
             atMapB = nnfeature.attributes()
