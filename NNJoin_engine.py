@@ -189,7 +189,6 @@ class Worker(QtCore.QObject):
             # This is not used for anything yet
             self.inputmulti = False
             if self.selectedinonly:
-                # feats = self.inpvl.selectedFeaturesIterator()
                 feats = self.inpvl.getSelectedFeatures()
             else:
                 feats = self.inpvl.getFeatures()
@@ -241,6 +240,7 @@ class Worker(QtCore.QObject):
             while collission:   # Iterate until there are no collissions
                 collission = False
                 for field in outfields:
+                    # This check should not be necessary - handled in the UI
                     if field.name() == self.distancename:
                         self.status.emit(
                               'Distance field already exists - renaming!')
@@ -283,7 +283,6 @@ class Worker(QtCore.QObject):
                 self.increment = self.feature_count // 1000
                 self.joinlind = QgsSpatialIndex()
                 if self.selectedjoonly:
-                    # for feat in self.joinvl.selectedFeaturesIterator():
                     for feat in self.joinvl.getSelectedFeatures():
                         # Allow user abort
                         if self.abort is True:
@@ -401,7 +400,7 @@ class Worker(QtCore.QObject):
         infeature = feat
         # Get the feature ID
         infeatureid = infeature.id()
-        self.status.emit('**infeatureid: ' + str(infeatureid))
+        # self.status.emit('**infeatureid: ' + str(infeatureid))
         # Get the feature geometry
         inputgeom = infeature.geometry()
         # Shall approximate input geometries be used?
@@ -503,39 +502,52 @@ class Worker(QtCore.QObject):
                 # Does not handle cases where multiple polygons contain
                 # the point!!!???
                 if self.excludecontaining:
-                    self.status.emit('Check containing!')
-                    nearestindexes = self.joinlind.nearestNeighbor(
-                                           inputgeom.asPoint(), 2)
-                    nearestindexid = nearestindexes[0]
-                    # Seems to respect selection...?
+                    contained = False
                     nearfeature = next(self.joinvl.getFeatures(
-                        QgsFeatureRequest(nearestindexid)))
+                            QgsFeatureRequest(nearestindexid)))
                     # Check for containment  # Works!
                     if nearfeature.geometry().contains(inputgeom.asPoint()):
-                        self.status.emit('Contained! - ' + str(nearestindexid))
-                        if len(nearestindexes) > 1:
-                            nearestindexid = nearestindexes[1]
-                            self.status.emit('Continue to - ' + str(nearestindexid))
+                        contained = True
+                    numberofnn = 2
+                    # Assumes that nearestNeighbor returns hits in the same
+                    # sequence for all numbers of nearest neighbour
+                    while contained:
+                        if self.abort is True:
+                            break
+                        nearestindexes = self.joinlind.nearestNeighbor(
+                                               inputgeom.asPoint(), numberofnn)
+                        if len(nearestindexes) < numberofnn:
+                            nearestindexid = nearestindexes[numberofnn - 2]
+                            self.status.emit('No non-containing geometries!')
+                            break
                         else:
-                            nearestindexid = nearestindexes[0]
-                            self.status.emit('number of features <= 1!')
-                    ### ???????
-                # Get the feature!
-                if False:
+                            nearestindexid = nearestindexes[numberofnn - 1]
+                            # Seems to respect selection...?
+                            nearfeature = next(self.joinvl.getFeatures(
+                                QgsFeatureRequest(nearestindexid)))
+                            # Check for containment  # Works!
+                            if nearfeature.geometry().contains(
+                                                         inputgeom.asPoint()):
+                                contained = True
+                            else:
+                                contained = False
+                        numberofnn = numberofnn + 1
+                    # end while
+
+                # Get the feature among the candidates from the index
                 #if self.selectedjoonly:
-                    # Does not get the correct feature!
-                    nnfeature = next(self.joinvl.getSelectedFeatures(
-                        QgsFeatureRequest(nearestindexid)))
-                else:
-                    # This seems to work also in the presence of selections
-                    nnfeature = next(self.joinvl.getFeatures(
-                        QgsFeatureRequest(nearestindexid)))
-                self.status.emit('Join feature: ' + str(nnfeature.id()))
+                #    # Does not get the correct feature!
+                #    nnfeature = next(self.joinvl.getSelectedFeatures(
+                #        QgsFeatureRequest(nearestindexid)))
+                # This seems to work also in the presence of selections
+                nnfeature = next(self.joinvl.getFeatures(
+                    QgsFeatureRequest(nearestindexid)))
                 mindist = inputgeom.distance(nnfeature.geometry())
                 if mindist == 0:
-                    insidep = nnfeature.geometry().contains(inputgeom.asPoint())
-                    self.status.emit('  0 distance! - ' + str(nearestindexid))
-                    self.status.emit('  Inside: ' + str(insidep))
+                    insidep = nnfeature.geometry().contains(
+                                                          inputgeom.asPoint())
+                    # self.status.emit('0 distance! - ' + str(nearestindexid))
+                    # self.status.emit('Inside: ' + str(insidep))
                 px = inputgeom.asPoint().x()
                 py = inputgeom.asPoint().y()
                 # Search the neighbourhood
@@ -550,14 +562,14 @@ class Worker(QtCore.QObject):
                     # Check for self join and same feature
                     if self.selfjoin and closefid == infeatureid:
                         continue
-                    # If exclude containing, check for containment  ## funker ikke helt...
+                    # If exclude containing, check for containment
                     if self.excludecontaining:
                         # Seems to respect selection...?
                         closefeature = next(self.joinvl.getFeatures(
                             QgsFeatureRequest(closefid)))
                         # Check for containment
-                        if closefeature.geometry().contains(inputgeom.asPoint()):
-                            self.status.emit('Contained - eliminate! - ' + str(closefid))  # Works!
+                        if closefeature.geometry().contains(
+                                                         inputgeom.asPoint()):
                             continue
                     if False:
                     #if self.selectedjoonly:
@@ -571,7 +583,7 @@ class Worker(QtCore.QObject):
                         mindist = thisdistance
                         nnfeature = closef
                     if mindist == 0:
-                        self.status.emit('  Mindist = 0!')
+                        # self.status.emit('  Mindist = 0!')
                         break
             # Other geometry on the join side
             else:
@@ -676,7 +688,7 @@ class Worker(QtCore.QObject):
                     if mindist == 0:
                         break
         if not self.abort:
-            self.status.emit('Near feature - ' + str(nnfeature.id()))
+            # self.status.emit('Near feature - ' + str(nnfeature.id()))
             # Collect the attribute
             atMapA = infeature.attributes()
             atMapB = nnfeature.attributes()

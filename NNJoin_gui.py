@@ -483,7 +483,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                  wkbType == QgsWkbTypes.Point25D or
                  self.approximate_input_geom_cb.isChecked()) and
                 (joinwkbType == QgsWkbTypes.Polygon or
-                 joinwkbType == QgsWkbTypes.Polygon25D)):
+                 joinwkbType == QgsWkbTypes.Polygon25D) and
+                (not self.use_indexapprox_cb.isChecked())):
                 # For polygon join layers and point input layers,
                 # the user is allowed to choose to exclude the
                 # containing polygon in the join.

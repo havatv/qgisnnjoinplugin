@@ -48,6 +48,9 @@ Functionality
   For self joins, each feature in the layer is joined to its nearest
   neighbour within the layer.
 
+- For point to polygon layer joins, containing polygons can be
+  excluded from the search (not available for multi-polygon layers).
+
 - A spatial index (QgsSpatialIndex) on the join layer is used to
   speed up the join for layers with non-multi-geometry types.
 
@@ -81,6 +84,9 @@ Options
 
 - The user can choose not to use a spatial index on the join layer
   for non-point input layers.
+
+- For non-multi polygon join layers and point input layers (including
+  approximations), containing polygons can be excluded.
 
 - The user can specify the prefix of the join layer attributes in the
   output layer.
@@ -216,7 +222,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.0.6
+The current version is 3.1.0
+- 3.1.0
+
+  - Added option to exclude containing polygons for point input
+    layers (#16)
 
 - 3.0.6
 
