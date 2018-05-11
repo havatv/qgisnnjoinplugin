@@ -414,9 +414,12 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # user interface options accordingly
         if inputlayer is not None:
             wkbType = inputlayer.wkbType()
+            geomType = inputlayer.geometryType() # not used yet
             joinwkbType = QgsWkbTypes.Unknown
+            joingeomType = QgsWkbTypes.UnknownGeometry  # not used yet
             if joinlayer is not None:
                 joinwkbType = joinlayer.wkbType()
+                joingeomType = joinlayer.geometryType()
             # If the input layer is not a point layer, allow choosing
             # approximate geometry (centroid)
             if wkbType == QgsWkbTypes.Point or wkbType == QgsWkbTypes.Point25D:

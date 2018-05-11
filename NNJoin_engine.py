@@ -175,47 +175,29 @@ class Worker(QtCore.QObject):
                 self.status.emit('Layer without features!')
                 self.finished.emit(False, None)
                 return
-            # Check the geometry type and prepare the output layer
-            geometryType = self.inpvl.geometryType()
-            geometrytypetext = 'Point'
-            if geometryType == QgsWkbTypes.PointGeometry:
-                geometrytypetext = 'Point'
-            elif geometryType == QgsWkbTypes.LineGeometry:
-                geometrytypetext = 'LineString'
-            elif geometryType == QgsWkbTypes.PolygonGeometry:
-                geometrytypetext = 'Polygon'
-            # Does the input vector contain multi-geometries?
-            # Try to check the first feature
-            # This is not used for anything yet
-            self.inputmulti = False
-            if self.selectedinonly:
-                feats = self.inpvl.getSelectedFeatures()
-            else:
-                feats = self.inpvl.getFeatures()
-            if feats is not None:
-                testfeature = next(feats)
-                feats.rewind()
-                feats.close()
-                if testfeature is not None:
-                    if testfeature.hasGeometry():
-                        if testfeature.geometry().isMultipart():
-                            self.inputmulti = True
-                            geometrytypetext = 'Multi' + geometrytypetext
-                        else:
-                            pass
-                    else:
-                        self.status.emit('No geometry!')
-                        self.finished.emit(False, None)
-                        return
-                else:
-                    self.status.emit('No input features!')
-                    self.finished.emit(False, None)
-                    return
-            else:
-                self.status.emit('getFeatures returns None for input layer!')
+            # Check if the input layer has geometries
+            if (self.inpvl.geometryType() == QgsWkbTypes.NullGeometry):
+                self.status.emit('No geometry!')
                 self.finished.emit(False, None)
                 return
-            geomttext = geometrytypetext
+            # Check the geometry type and prepare the output layer
+            inpwkbType = self.inpvl.wkbType()
+            inpwkbtypetext = QgsWkbTypes.displayString(int(inpwkbType))
+            # self.inputmulti = QgsWkbTypes.isMultiType(inpwkbType)
+            # self.status.emit('wkbtype: ' + inpwkbtypetext)
+            # geometryType = self.inpvl.geometryType()
+            # geometrytypetext = 'Point'
+            # if geometryType == QgsWkbTypes.PointGeometry:
+            #     geometrytypetext = 'Point'
+            # elif geometryType == QgsWkbTypes.LineGeometry:
+            #     geometrytypetext = 'LineString'
+            # elif geometryType == QgsWkbTypes.PolygonGeometry:
+            #     geometrytypetext = 'Polygon'
+            # if self.inputmulti:
+            #     geometrytypetext = 'Multi' + geometrytypetext
+            # geomttext = geometrytypetext
+
+            geomttext = inpwkbtypetext
             # Set the coordinate reference system to the input
             # layer's CRS using authid (proj4 may be more robust)
             if self.inpvl.crs() is not None:
@@ -316,14 +298,6 @@ class Worker(QtCore.QObject):
                     if testfeature.hasGeometry():
                         if testfeature.geometry().isMultipart():
                             self.joinmulti = True
-                    else:
-                        self.status.emit('No join geometry!')
-                        self.finished.emit(False, None)
-                        return
-                else:
-                    self.status.emit('No join features!')
-                    self.finished.emit(False, None)
-                    return
             # Prepare for the join by fetching the layers into memory
             # Add the input features to a list
             self.inputf = []
@@ -431,7 +405,7 @@ class Worker(QtCore.QObject):
 
         # If the input layer's geometry type is point, or has been
         # approximated to point (centroid), then a join index will
-        # always be used.
+        # be used.
         if (self.approximateinputgeom or
                 self.inpvl.wkbType() == QgsWkbTypes.Point or
                 self.inpvl.wkbType() == QgsWkbTypes.Point25D):
@@ -454,6 +428,7 @@ class Worker(QtCore.QObject):
                     # Get the feature!
                     if False:
                     #if self.selectedjoonly:
+                        # This caused problems (wrong results) in QGIS 3.0.1
                         nnfeature = next(
                             self.joinvl.getSelectedFeatures(
                                 QgsFeatureRequest(nearestids[fch])))
@@ -499,13 +474,11 @@ class Worker(QtCore.QObject):
                         nearestindexid = nearestindexes[1]
 
                 # If exclude containing, check for containment
-                # Does not handle cases where multiple polygons contain
-                # the point!!!???
                 if self.excludecontaining:
                     contained = False
                     nearfeature = next(self.joinvl.getFeatures(
-                            QgsFeatureRequest(nearestindexid)))
-                    # Check for containment  # Works!
+                                           QgsFeatureRequest(nearestindexid)))
+                    # Check for containment
                     if nearfeature.geometry().contains(inputgeom.asPoint()):
                         contained = True
                     numberofnn = 2
@@ -585,7 +558,7 @@ class Worker(QtCore.QObject):
                     if mindist == 0:
                         # self.status.emit('  Mindist = 0!')
                         break
-            # Other geometry on the join side
+            # Other geometry on the join side (multi and more)
             else:
                 # Join with no index use
                 # Go through all the features from the join layer!
