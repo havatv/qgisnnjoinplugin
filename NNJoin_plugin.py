@@ -78,8 +78,8 @@ class NNJoin(object):
         self.NNJOINAMP = self.tr('&NNJoin')
         self.toolbar = None
         # Separate toolbar for NNJoin:
-        #self.toolbar = self.iface.addToolBar(self.NNJOIN)
-        #self.toolbar.setObjectName(self.NNJOIN)
+        # self.toolbar = self.iface.addToolBar(self.NNJOIN)
+        # self.toolbar.setObjectName(self.NNJOIN)
 
         # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -157,13 +157,13 @@ class NNJoin(object):
         for layerdescription in layerslist:
             self.dlg.inputVectorLayer.addItem(layerdescription[0],
                                         layerdescription[1])
-        #for alayer in self.iface.legendInterface().layers():
-        #for alayer in layers:
+        # for alayer in self.iface.legendInterface().layers():
+        # for alayer in layers:
         #    if alayer.type() == QgsMapLayer.VectorLayer:
-        #        self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
+        #         self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
         self.dlg.joinVectorLayer.clear()
-        #for alayer in self.iface.legendInterface().layers():
-        #for alayer in layers:
+        # for alayer in self.iface.legendInterface().layers():
+        # for alayer in layers:
         #    if alayer.type() == QgsMapLayer.VectorLayer:
         #        self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
         # Add the layers to the layers combobox

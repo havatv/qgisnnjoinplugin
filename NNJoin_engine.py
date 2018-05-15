@@ -170,6 +170,11 @@ class Worker(QtCore.QObject):
                 self.status.emit('Layer without features!')
                 self.finished.emit(False, None)
                 return
+            # Check if the input layer has geometries
+            if (self.inpvl.geometryType() == QGis.NoGeometry):
+                self.status.emit('No geometry!')
+                self.finished.emit(False, None)
+                return
             # Check the geometry type and prepare the output layer
             geometryType = self.inpvl.geometryType()
             geometrytypetext = 'Point'
@@ -242,16 +247,18 @@ class Worker(QtCore.QObject):
                     if field.name() == self.distancename:
                         self.status.emit(
                               'Distance field already exists - renaming!')
-                        #self.abort = True
-                        #self.finished.emit(False, None)
-                        #break
+                        # self.abort = True
+                        # self.finished.emit(False, None)
+                        # break
                         collission = True
                         self.distancename = self.distancename + '1'
             outfields.append(QgsField(self.distancename, QVariant.Double))
-            # Create a memory layer
+            # Create a memory layer using a CRS description
             self.mem_joinl = QgsVectorLayer(geomttext,
                                             self.outputlayername,
                                             "memory")
+            # Set the CRS to the inputlayer's CRS
+            self.mem_joinl.setCrs(self.inpvl.crs())
             self.mem_joinl.startEditing()
             # Add the fields
             for field in outfields:
@@ -295,7 +302,7 @@ class Worker(QtCore.QObject):
                 self.status.emit('Join layer index created!')
                 self.processed = 0
                 self.percentage = 0
-                #self.calculate_progress()
+                # self.calculate_progress()
             # Does the join layer contain multi geometries?
             # Try to check the first feature
             # This is not used for anything yet
