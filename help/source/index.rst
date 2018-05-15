@@ -223,10 +223,12 @@ the join layer CRS is not possible.
 Versions
 ===============
 The current version is 3.1.0
+
 - 3.1.0
 
   - Added option to exclude containing polygons for point input
     layers (#16)
+  - Fixed issue with progressbar running too fast (#17)
 
 - 3.0.6
 
