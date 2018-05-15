@@ -213,7 +213,7 @@ class Worker(QtCore.QObject):
             geomttext = geometrytypetext
             # Set the coordinate reference system to the input
             # layer's CRS using authid (proj4 may be more robust)
-            crstext = "PROJ4:"+str(self.inpvl.crs().toProj4())
+            crstext = "PROJ4:" + str(self.inpvl.crs().toProj4())
             # If the authid is valid (EPSG), use it.
             if "EPSG" in str(self.inpvl.crs().authid()):
                 crstext = self.inpvl.crs().authid()
@@ -632,7 +632,7 @@ class Worker(QtCore.QObject):
             #outFeat.setGeometry(QgsGeometry(inputgeom))
             # Add the attributes
             outFeat.setAttributes(attrs)
-            self.calculate_progress()
+            #self.calculate_progress()
             self.features.append(outFeat)
             #self.mem_joinl.dataProvider().addFeatures([outFeat])
 

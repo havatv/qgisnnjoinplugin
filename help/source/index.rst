@@ -219,7 +219,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 1.3.2
+The current version is 1.3.3
+
+- 1.3.3
+
+  - Fixed issue with progressbar running too fast (#17)
 
 - 1.3.2
 
