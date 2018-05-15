@@ -159,13 +159,13 @@ class NNJoin(object):
                                         layerdescription[1])
         # for alayer in self.iface.legendInterface().layers():
         # for alayer in layers:
-        #    if alayer.type() == QgsMapLayer.VectorLayer:
+        #     if alayer.type() == QgsMapLayer.VectorLayer:
         #         self.dlg.inputVectorLayer.addItem(alayer.name(), alayer.id())
         self.dlg.joinVectorLayer.clear()
         # for alayer in self.iface.legendInterface().layers():
         # for alayer in layers:
-        #    if alayer.type() == QgsMapLayer.VectorLayer:
-        #        self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
+        #     if alayer.type() == QgsMapLayer.VectorLayer:
+        #         self.dlg.joinVectorLayer.addItem(alayer.name(), alayer.id())
         # Add the layers to the layers combobox
         for layerdescription in layerslist:
             self.dlg.joinVectorLayer.addItem(layerdescription[0],
