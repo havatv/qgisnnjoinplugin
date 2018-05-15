@@ -678,7 +678,7 @@ class Worker(QtCore.QObject):
             # outFeat.setGeometry(inputgeom)
             # Add the attributes
             outFeat.setAttributes(attrs)
-            self.calculate_progress()
+            # self.calculate_progress()
             self.features.append(outFeat)
             # self.mem_joinl.dataProvider().addFeatures([outFeat])
 
