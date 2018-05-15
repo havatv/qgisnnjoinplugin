@@ -533,7 +533,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def help(self):
         #QDesktopServices.openUrl(QUrl.fromLocalFile(
         #                 self.plugin_dir + "/help/html/index.html"))
-        showPluginHelp(None, "help/index")
+        showPluginHelp(None, "help/html/index")
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
