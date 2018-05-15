@@ -191,7 +191,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                               " input layer - doing a self join!")
         except:
             import traceback
-            self.showError(traceback.format_exc())
+            self.showError("Error starting worker: " + traceback.format_exc())
         else:
             pass
         # End of startworker
@@ -349,8 +349,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
     def updateui(self):
         """Do the necessary updates after a layer selection has
            been changed."""
-        #if self.layerlistchanged:
-        #    return
+        # if self.layerlistchanged:
+        #     return
         # Update the output dataset name
         self.outputDataset.setText(self.inputVectorLayer.currentText() +
                                    '_' + self.joinVectorLayer.currentText())
