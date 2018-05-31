@@ -9,8 +9,9 @@ email=havard.tveite@nmbu.no
 about=The NNPlugin joins two vector layers (the input and the join layer) based on nearest neighbour relationships.  All geometry type combinations are supported.  A feature from the input layer is joined to the nearest feature in the join layer.  The result of the join is a new vector layer with the same geometry type and coordinate reference system as the input layer.  Joining layers with different Coordinate Reference Systems (CRS) is supported, as long as the join layer coordinate system is a projected CRS.  The join and distance calculations is performed using the join layer CRS.  Self joins are supported. For self joins, each feature in the layer is joined to its nearest neighbour within the layer.  A spatial index (QgsSpatialIndex) on the join layer is used to speed up the join for layers with non-multi-geometry types.
 
 changelog=3.1 (2018-05)
-    - fixed issue with progressbar running too fast (#17)
     - option to exclude containing polygons for point input layers (#16)
+    3.0.7 (2018-05)
+    - fixed issue with progressbar running too fast (#17)
     3.0.6 (2018-04)
     - QgsCoordinateTransform issue caused by API change (#15)
     3.0.5 (2018-03)
