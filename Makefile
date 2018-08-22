@@ -53,9 +53,9 @@ UI_FILES = ui_frmNNJoin.ui
 
 EXTRAS = nnjoin.png metadata.txt
 
-COMPILED_RESOURCE_FILES = resources_rc.py
+COMPILED_RESOURCE_FILES = resources.py
 
-PEP8EXCLUDE=pydev,resources_rc.py,conf.py,third_party,ui
+PEP8EXCLUDE=pydev,resources.py,conf.py,third_party,ui
 
 
 #################################################
@@ -76,8 +76,8 @@ default: compile
 
 compile: $(COMPILED_RESOURCE_FILES)
 
-%_rc.py : %.qrc $(RESOURCES_SRC)
-	pyrcc5 -o $*_rc.py  $<
+%.py : %.qrc $(RESOURCES_SRC)
+	pyrcc5 -o $*.py  $<
 
 %.qm : %.ts
 	$(LRELEASE) $<

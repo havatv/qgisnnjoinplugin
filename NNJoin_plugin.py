@@ -40,9 +40,7 @@ from qgis.PyQt.QtGui import QIcon
 # from PyQt4.QtGui import QAction, QMessageBox, QIcon
 
 # Plugin imports
-import sys
-sys.path.append(os.path.dirname(__file__))
-import resources_rc
+from .resources import *
 from .NNJoin_gui import NNJoinDialog
 
 
