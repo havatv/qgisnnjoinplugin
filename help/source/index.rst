@@ -222,7 +222,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.1.0
+The current version is 3.1.1
+
+- 3.1.1
+
+  - Fix issue with icon not showing in toolbar (#25)
 
 - 3.1.0
 
