@@ -22,13 +22,18 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
+__author__ = 'Håvard Tveite'
+__date__ = '2018-10-04'
+__copyright__ = '(C) 2018 by Håvard Tveite'
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Return the NNJoin class from the file NNJoin_plugin.
+    """Return the NNJoin class.
+    Return the NNJoinProcessingPlugin class.
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    # Load the NNJoin class from file NNJoin_plugin.
-    from .NNJoin_plugin import NNJoin
-    return NNJoin(iface)
+    # Load the processing algorithm^
+    from .NNJoin_processingplugin import NNJoinProcessingPlugin
+    return NNJoinProcessingPlugin()
+
