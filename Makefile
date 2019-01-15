@@ -41,7 +41,7 @@ SOURCES = \
     NNJoin_gui.py \
     NNJoin_processingplugin.py \
     NNJoin_algorithm.py \
-    NNJoin_provider.py
+    NNJoin_provider.py \
     NNJoin_engine.py
 
 PLUGINNAME = NNJoin
@@ -52,7 +52,7 @@ PY_FILES = \
     NNJoin_gui.py \
     NNJoin_processingplugin.py \
     NNJoin_algorithm.py \
-    NNJoin_provider.py
+    NNJoin_provider.py \
     NNJoin_engine.py
 
 UI_FILES = ui_frmNNJoin.ui
