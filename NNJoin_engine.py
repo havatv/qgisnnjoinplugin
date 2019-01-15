@@ -479,7 +479,9 @@ class Worker(QtCore.QObject):
                     nearfeature = next(self.joinvl.getFeatures(
                                            QgsFeatureRequest(nearestindexid)))
                     # Check for containment
-                    if nearfeature.geometry().contains(inputgeom.asPoint()):
+                    if nearfeature.geometry().contains(inputgeom):
+                        contained = True
+                    if inputgeom.contains(nearfeature.geometry()):
                         contained = True
                     numberofnn = 2
                     # Assumes that nearestNeighbor returns hits in the same
@@ -500,7 +502,10 @@ class Worker(QtCore.QObject):
                                 QgsFeatureRequest(nearestindexid)))
                             # Check for containment  # Works!
                             if nearfeature.geometry().contains(
-                                                         inputgeom.asPoint()):
+                                                         inputgeom):
+                                contained = True
+                            elif inputgeom.contains(
+                                    nearfeature.geometry()):
                                 contained = True
                             else:
                                 contained = False
@@ -681,6 +686,7 @@ class Worker(QtCore.QObject):
             # self.calculate_progress()
             self.features.append(outFeat)
             # self.mem_joinl.dataProvider().addFeatures([outFeat])
+    # end of do_indexjoin
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
