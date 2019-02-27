@@ -72,6 +72,7 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
     JOINPREFIX = 'JOINPREFIX'
     DISTANCEFIELDNAME = 'DISTANCEFIELDNAME'
 
+    #EXCLUDEINTERSECTING = 'EXCLUDEINTERSECTING'
     EXCLUDECONTAINING = 'EXCLUDECONTAINING'
     USEJOINLAYERINDEX = 'USEJOINLAYERINDEX'
 
@@ -136,12 +137,18 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
         )
 
         # Add a checkbox for exclude containing geometries.
+        ## Add a checkbox for exclude intersecting geometries.
         self.addParameter(
             QgsProcessingParameterBoolean(
                 self.EXCLUDECONTAINING,
                 self.tr('Exclude containing geometries'),
                 False
             )
+            #QgsProcessingParameterBoolean(
+            #    self.EXCLUDEINTERSECTING,
+            #    self.tr('Exclude intersecting geometries'),
+            #    False
+            #)
         )
 
         # Add a feature sink in which to store the result of the join.
@@ -205,6 +212,8 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
         self.nonpointexactindex = usejoinindex
         excludecontaining = self.parameterAsBool(parameters, self.EXCLUDECONTAINING, context)
         self.excludecontaining = excludecontaining
+        #excludeintersecting = self.parameterAsBool(parameters, self.EXCLUDEINTERSECTING, context)
+        #self.excludeintersecting = excludeintersecting
         joinprefix = self.parameterAsString(parameters, self.JOINPREFIX, context)
         self.joinprefix = joinprefix
         distname = self.parameterAsString(parameters, self.DISTANCEFIELDNAME, context)
@@ -477,30 +486,37 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
                                   len(nearestindexes) > 1):
                         nearestindexid = nearestindexes[1]
 
+                ## If exclude intersecting, check for intersection
                 # If exclude containing, check for containment
+                #if self.excludeintersecting
                 if self.excludecontaining:
                     # feedback.pushInfo('Exclude containing...')
+                    ## feedback.pushInfo('Exclude intersecting...')
                     nearfeature = next(self.joinvl.getFeatures(
                                            QgsFeatureRequest(nearestindexid)))
+                    ## Check for intersection
                     # Check for containment
-                    contained = False
+                    related = False
+                    #if nearfeature.geometry().intersects(inputgeom):
                     if nearfeature.geometry().contains(inputgeom):
-                        contained = True
+                        related = True
+                    #elif inputgeom.intersects(nearfeature.geometry()):
                     elif inputgeom.contains(nearfeature.geometry()):
                         # Should not happen with point input?
-                        contained = True
+                        related = True
                     else:
-                        contained = False  # Superfluous
+                        related = False  # Superfluous
                     numberofnn = 2
                     # Assumes that nearestNeighbor returns hits in the same
                     # sequence for all numbers of nearest neighbour
-                    while contained:
+                    while related:
                         if feedback.isCanceled():
                             break
                         nearestindexes = self.joinlind.nearestNeighbor(
                                                inputgeom.asPoint(), numberofnn)
                         if len(nearestindexes) < numberofnn:
                             nearestindexid = nearestindexes[numberofnn - 2]
+                            # feedback.pushInfo('No non-intersecting geometries!')
                             # feedback.pushInfo('No non-containing geometries!')
                             break
                         else:
@@ -508,18 +524,20 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
                             nearfeature = next(self.joinvl.getFeatures(
                                 QgsFeatureRequest(nearestindexid)))
                             # Check for containment  # Works!
+                            #if nearfeature.geometry().intersects(inputgeom):
                             if nearfeature.geometry().contains(
                                                          inputgeom):
-                                contained = True
+                                related = True
+                            #elif inputgeom.intersects(nearfeature.geometry()):
                             elif inputgeom.contains(
                                             nearfeature.geometry()):
-                                contained = True
+                                related = True
                             else:
-                                contained = False
+                                related = False
                         numberofnn = numberofnn + 1
                     # end while
-                    if contained:
-                        # No non-containing / contained features
+                    if related:
+                        # No non-containing / related features
                         attrs = []
                         atMapA = infeature.attributes()
                         attrs.extend(atMapA)
@@ -550,10 +568,13 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
                     if self.selfjoin and closefid == infeatureid:
                         continue
                     # If exclude containing, check for containment
+                    #if self.excludeintersecting:
                     if self.excludecontaining:
                         closefeature = next(self.joinvl.getFeatures(
                             QgsFeatureRequest(closefid)))
+                        ## Check for intersection
                         # Check for containment
+                        #if closefeature.geometry().intersects(inputgeom.asPoint()):
                         if closefeature.geometry().contains(
                                                          inputgeom.asPoint()):
                             continue
@@ -582,6 +603,7 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
                             infeatureid == inFeatJoin.id()):
                         continue
                     if self.excludecontaining and thisdistance == 0.0:
+                    #if self.excludeintersecting and thisdistance == 0.0:
                         continue
                     if thisdistance < mindist:
                         mindist = thisdistance
@@ -594,6 +616,7 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
         else:
             if (self.nonpointexactindex):
                 # "exclude containing" not respected!!!
+                ## "exclude intersecting" not respected!!!
 
                 # Use the spatial index on the join layer (default).
                 # First we do an approximate search
@@ -658,6 +681,7 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
                     thisdistance = inputgeom.distance(joingeom)
                     # feedback.pushInfo('Distance: ' + str(thisdistance))
                     # if self.excludecontaining and math.isclose(thisdistance, 0.0):
+                    #if self.excludeintersecting and thisdistance == 0.0:
                     if self.excludecontaining and thisdistance == 0.0:
                         continue
                     # If the distance is 0, check for equality of the
