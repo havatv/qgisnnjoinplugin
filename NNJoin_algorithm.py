@@ -155,7 +155,7 @@ class NNJoinAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.OUTPUT,
-                self.tr('Output layer')
+                self.tr('NNJoin output layer')
             )
         )
 
