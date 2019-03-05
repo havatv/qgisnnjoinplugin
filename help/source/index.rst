@@ -22,6 +22,7 @@ Functionality
 
 - A feature from the *input* layer is joined to the nearest
   feature in the *join* layer.
+  Join layer features with missing geometries are ignored.
 
 - The result of the join is a new vector layer with the same
   geometry type and coordinate reference system as the *input*
@@ -61,7 +62,9 @@ The result layer is a memory layer that will contain all the
 attributes of both the *input* and *join* layers plus a new attribute
 that contains the distance between the joined features (the default
 name of the distance attribute is "distance", but can be changed by
-the user).
+the user).  If an input layer geometry is missing, the distance
+attribute will be set to a very large negative value, and all the
+join layer attributes are set to NULL.
 The attributes from the *join* layer will get a prefix
 (the default is "join\_", but this can be set by the user).
 If a join prefix is not used, attributes from the join layer that
@@ -222,11 +225,15 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.1.1
+The current version is 3.1.2
+
+- 3.1.2
+
+  - Handle features with empty geometry (#19)
 
 - 3.1.1
 
-  - Fix issue with icon not showing in toolbar (#25)
+  - Fix issue with icon not showing in toolbar (#18)
 
 - 3.1.0
 
