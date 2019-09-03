@@ -540,6 +540,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
             return "Unknown"
         elif number == QgsWkbTypes.Point:
             return "Point"
+        elif number == QgsWkbTypes.PointZ:
+            self.showWarning('Z coordinate will be ignored for PointZ layer')
+            return "PointZ"
         elif number == QgsWkbTypes.LineString:
             return "LineString"
         elif number == QgsWkbTypes.Polygon:
@@ -565,7 +568,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         elif number == QgsWkbTypes.MultiPolygon25D:
             return "MultiPolygon25D"
         else:
-            showError('Unknown or invalid geometry type: ' + str(number))
+            self.showError('Unknown or invalid geometry type: ' + str(number))
             return "Don't know"
         # End of getwkbtext
 
