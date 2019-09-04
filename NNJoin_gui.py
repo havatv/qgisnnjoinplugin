@@ -541,7 +541,7 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         elif number == QgsWkbTypes.Point:
             return "Point"
         elif number == QgsWkbTypes.PointZ:
-            self.showWarning('Z coordinate will be ignored for PointZ layer')
+            self.showWarning('The Z coordinate will be ignored for PointZ layers')
             return "PointZ"
         elif number == QgsWkbTypes.LineString:
             return "LineString"
