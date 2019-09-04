@@ -414,9 +414,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # user interface options accordingly
         if inputlayer is not None:
             wkbType = inputlayer.wkbType()
-            geomType = inputlayer.geometryType()  # not used yet
+            geomType = inputlayer.geometryType()
             joinwkbType = QgsWkbTypes.Unknown
-            joingeomType = QgsWkbTypes.UnknownGeometry  # not used yet
+            joingeomType = QgsWkbTypes.UnknownGeometry
             if joinlayer is not None:
                 joinwkbType = joinlayer.wkbType()
                 joingeomType = joinlayer.geometryType()
@@ -486,8 +486,9 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.use_indexapprox_cb.blockSignals(False)
 
             # Update the exclude containing polygon checkbox:
-            if ((wkbType == QgsWkbTypes.Point or
-                 wkbType == QgsWkbTypes.Point25D or
+            if ((geomType == QgsWkbTypes.PointGeometry or
+                 #wkbType == QgsWkbTypes.Point or
+                 #wkbType == QgsWkbTypes.Point25D or
                  self.approximate_input_geom_cb.isChecked()) and
                 (joinwkbType == QgsWkbTypes.Polygon or
                  joinwkbType == QgsWkbTypes.Polygon25D) and
