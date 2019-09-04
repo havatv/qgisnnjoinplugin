@@ -422,7 +422,8 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 joingeomType = joinlayer.geometryType()
             # If the input layer is not a point layer, allow choosing
             # approximate geometry (centroid)
-            if wkbType == QgsWkbTypes.Point or wkbType == QgsWkbTypes.Point25D:
+            if geomType == QgsWkbTypes.PointGeometry:
+            #if wkbType == QgsWkbTypes.Point or wkbType == QgsWkbTypes.Point25D:
                 # Input layer is a simple point layer and can not
                 # be approximated
                 self.approximate_input_geom_cb.blockSignals(True)
@@ -460,11 +461,14 @@ class NNJoinDialog(QDialog, FORM_CLASS):
                 self.use_index_nonpoint_cb.blockSignals(False)
             # This does not work!!????
             # Update the use index approximation checkbox:
-            if (((wkbType == QgsWkbTypes.Point) or
-                 (wkbType == QgsWkbTypes.Point25D) or
+            if (((geomType == QgsWkbTypes.PointGeometry) or
                  self.approximate_input_geom_cb.isChecked()) and
-                not (joinwkbType == QgsWkbTypes.Point or
-                         joinwkbType == QgsWkbTypes.Point25D)):
+                not (joingeomType == QgsWkbTypes.PointGeometry)):
+            #if (((wkbType == QgsWkbTypes.Point) or
+            #     (wkbType == QgsWkbTypes.Point25D) or
+            #     self.approximate_input_geom_cb.isChecked()) and
+            #    not (joinwkbType == QgsWkbTypes.Point or
+            #             joinwkbType == QgsWkbTypes.Point25D)):
                 # For non-point join layers and point input layers,
                 # the user is allowed to choose an approximation (the
                 # index geometry) to be used for the join geometry in
