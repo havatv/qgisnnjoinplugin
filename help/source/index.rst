@@ -225,7 +225,11 @@ the join layer CRS is not possible.
 
 Versions
 ===============
-The current version is 3.1.2
+The current version is 3.1.3
+
+- 3.1.3
+
+  - Handle more geometry types for display in the user interface (#22, #25)
 
 - 3.1.2
 

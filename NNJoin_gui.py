@@ -325,13 +325,15 @@ class NNJoinDialog(QDialog, FORM_CLASS):
         # type information
         if inputlayer is not None:
             inputwkbtype = inputlayer.wkbType()
-            inputlayerwkbtext = self.getwkbtext(inputwkbtype)
+            # inputlayerwkbtext = self.getwkbtext(inputwkbtype)
+            inputlayerwkbtext = QgsWkbTypes.displayString(inputwkbtype)
             self.inputgeometrytypelabel.setText(inputlayerwkbtext)
         # Update the join layer UI label with join geometry type
         # information
         if joinlayer is not None:
             joinwkbtype = joinlayer.wkbType()
-            joinlayerwkbtext = self.getwkbtext(joinwkbtype)
+            #joinlayerwkbtext = self.getwkbtext(joinwkbtype)
+            joinlayerwkbtext = QgsWkbTypes.displayString(joinwkbtype)
             self.joingeometrytypelabel.setText(joinlayerwkbtext)
         # Check the coordinate systems
         # Different CRSs? - give a warning!
