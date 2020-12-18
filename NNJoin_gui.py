@@ -28,7 +28,9 @@ from qgis.core import QgsMessageLog, QgsProject, Qgis
 from qgis.core import QgsMapLayer
 from qgis.core import QgsWkbTypes
 from qgis.gui import QgsMessageBar
-# from qgis.utils import showPluginHelp
+from qgis.PyQt.QtWidgets import QMessageBox
+frompy <qt<widgetsimport QMessageBox
+from qgis.utils import showPluginHelp
 
 # QGIS 3
 from qgis.PyQt import uic
